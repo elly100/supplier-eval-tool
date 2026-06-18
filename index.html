@@ -52,6 +52,8 @@
   .dim-card.open .dim-body { display:block; }
   .dim-card.open .dim-header { border-bottom:1px solid var(--border); }
 
+  .scoring-guide { font-size:11px; color:#5f6368; background:#F8F9FA; border-left:3px solid #1A365D; padding:8px 12px; border-radius:0 6px 6px 0; margin-bottom:12px; line-height:1.6; }
+  .scoring-guide-icon { margin-right:4px; }
   .anchor-box { background:#FFF8E1; border:1px solid #FFE082; border-radius:8px; padding:12px 14px; margin-bottom:14px; }
   .anchor-box.fail { background:#FFEBEE; border-color:#EF9A9A; }
   .anchor-title { font-size:12px; font-weight:700; color:var(--navy); margin-bottom:4px; }
@@ -261,18 +263,23 @@ const ADMIN_PASSWORD = 'ls2024';
 const DIMS = [
   { id:'d1', num:'一', name:'设计与创意能力', weight:20, anchor:'主题理解与设计创意能力',
     anchorDesc:'准确理解企业文化内涵，回应brief方向，且设计方案具备原创性与基本设计水准；主题理解严重偏离、设计方案敷衍/纯模板套用/缺乏基本设计品质，均视为锚点不达标',
+    scoringGuide:'评价供应商对项目主题的理解深度、设计方案的创新性与完成度。关注：是否准确理解brief需求、设计方案是否有创意而非纯模板套用、视觉呈现是否有基本设计品质、是否能提供多方案选择。',
     ranges:[{name:'卓越',min:16,max:20,cls:'g-excellent'},{name:'优秀',min:13,max:15,cls:'g-good'},{name:'良好',min:10,max:12,cls:'g-ok'},{name:'合格',min:7,max:9,cls:'g-pass'},{name:'不合格',min:0,max:6,cls:'g-fail'}]},
   { id:'d2', num:'二', name:'选品能力', weight:25, anchor:'选品与主题契合度',
     anchorDesc:'选品与主题理解、设计理念高度契合，能准确回应项目需求',
+    scoringGuide:'评价供应商的选品是否贴合项目主题、品质是否达标、品类是否丰富。关注：选品是否与福利主题契合、产品品质与性价比、能否提供多样化选择、是否有独家或特色品项、样品质量是否稳定。',
     ranges:[{name:'卓越',min:20,max:25,cls:'g-excellent'},{name:'优秀',min:16,max:19,cls:'g-good'},{name:'良好',min:12,max:15,cls:'g-ok'},{name:'合格',min:8,max:11,cls:'g-pass'},{name:'不合格',min:0,max:7,cls:'g-fail'}]},
   { id:'d3', num:'三', name:'品质把控能力', weight:25, anchor:'主品品质稳定性',
     anchorDesc:'大货品质稳定可靠，实物与样品/效果图一致，无明显质量缺陷',
+    scoringGuide:'评价供应商对大货品质的把控能力。关注：大货与样品/效果图是否一致、有无明显色差/做工问题、包装是否完整美观、质检流程是否完善、不合格品处理是否及时、历次合作品质是否稳定。',
     ranges:[{name:'卓越',min:20,max:25,cls:'g-excellent'},{name:'优秀',min:16,max:19,cls:'g-good'},{name:'良好',min:12,max:15,cls:'g-ok'},{name:'合格',min:8,max:11,cls:'g-pass'},{name:'不合格',min:0,max:7,cls:'g-fail'}]},
   { id:'d4', num:'四', name:'交付与履约能力', weight:20, anchor:'按时按量按规格交付',
     anchorDesc:'在约定时间内完成约定数量的交付，货品规格、配送对象和地点无误',
+    scoringGuide:'评价供应商的交付可靠性。关注：是否按时交付、交付数量是否准确、货品规格是否与合同一致、配送对象和地点是否正确、出现延误时是否提前预警、多次合作交付是否稳定。',
     ranges:[{name:'卓越',min:16,max:20,cls:'g-excellent'},{name:'优秀',min:13,max:15,cls:'g-good'},{name:'良好',min:10,max:12,cls:'g-ok'},{name:'合格',min:7,max:9,cls:'g-pass'},{name:'不合格',min:0,max:6,cls:'g-fail'}]},
   { id:'d5', num:'五', name:'服务与响应能力', weight:10, anchor:'沟通配合度',
     anchorDesc:'对接顺畅，响应及时，能积极配合需求调整',
+    scoringGuide:'评价供应商的服务态度与沟通效率。关注：响应速度是否及时、沟通是否专业清晰、对需求变更是否积极配合、问题处理是否主动负责、售后支持是否到位。',
     ranges:[{name:'卓越',min:8,max:10,cls:'g-excellent'},{name:'优秀',min:6,max:7,cls:'g-good'},{name:'良好',min:5,max:5,cls:'g-ok'},{name:'合格',min:3,max:4,cls:'g-pass'},{name:'不合格',min:0,max:2,cls:'g-fail'}]},
 ];
 
@@ -329,6 +336,7 @@ function buildDimCards() {
         </div>
       </div>
       <div class="dim-body">
+        <div class="scoring-guide"><span class="scoring-guide-icon">💡</span>${dim.scoringGuide}</div>
         <div class="anchor-box" id="anchor-box-${dim.id}">
           <div class="anchor-title">🔒 关键锚点：${dim.anchor}</div>
           <div class="anchor-desc">${dim.anchorDesc}</div>
