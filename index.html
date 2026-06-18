@@ -37,6 +37,21 @@
   .supplier-section input[type="text"] { padding:8px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; width:200px; outline:none; }
   .supplier-section input[type="text"]:focus { border-color:var(--med-blue); }
 
+  /* 供应商自动补全 */
+  .supplier-input-wrap { position:relative; display:inline-block; }
+  .supplier-input-wrap input { width:220px; }
+  .supplier-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--white); border:1.5px solid var(--border); border-top:none; border-radius:0 0 8px 8px; max-height:240px; overflow-y:auto; z-index:100; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+  .supplier-dropdown.show { display:block; }
+  .supplier-dropdown-item { padding:8px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; }
+  .supplier-dropdown-item:hover { background:var(--light-bg); }
+  .supplier-dropdown-item:last-child { border-bottom:none; }
+  .supplier-dropdown-item .sd-name { font-weight:600; color:var(--navy); }
+  .supplier-dropdown-item .sd-meta { font-size:11px; color:#888; }
+  .supplier-history-hint { margin-top:8px; padding:8px 14px; background:#FFF8E1; border:1px solid #FFE082; border-radius:8px; font-size:12px; display:none; }
+  .supplier-history-hint.show { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .supplier-history-hint .shh-text { color:#666; }
+  .supplier-history-hint .shh-link { color:var(--med-blue); cursor:pointer; font-weight:600; text-decoration:underline; }
+
   .dim-card { background:var(--card); border-radius:var(--radius); margin-bottom:16px; border:1px solid var(--border); overflow:hidden; }
   .dim-card.anchor-fail { border-color:var(--red); border-width:2px; }
   .dim-header { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; cursor:pointer; user-select:none; }
@@ -184,6 +199,8 @@
     body { padding:10px; }
     .supplier-section { flex-direction:column; align-items:stretch; }
     .supplier-section input[type="text"] { width:100%; }
+    .supplier-input-wrap { width:100%; }
+    .supplier-input-wrap input { width:100% !important; }
     .grade-ref { grid-template-columns:repeat(3,1fr); }
     .result-bar-label { width:80px; font-size:10px; }
     .result-bar-tag { font-size:9px; }
@@ -250,7 +267,14 @@
         <label>你的名字</label>
         <input type="text" id="reviewer-name" placeholder="输入你的名字…" style="width:140px;" oninput="renderCompare()">
         <label>供应商名称</label>
-        <input type="text" id="supplier-name" placeholder="输入供应商名称…">
+        <div class="supplier-input-wrap">
+          <input type="text" id="supplier-name" placeholder="输入供应商名称…" autocomplete="off" oninput="onSupplierInput(this.value)" onfocus="onSupplierInput(this.value)" onblur="setTimeout(()=>hideSupplierDropdown(),200)">
+          <div class="supplier-dropdown" id="supplier-dropdown"></div>
+        </div>
+      </div>
+      <div class="supplier-history-hint" id="supplier-history-hint">
+        <span class="shh-text" id="shh-text"></span>
+        <span class="shh-link" id="shh-load-link" onclick="loadHistoryIntoForm()">📋 加载我的历史评价到表单</span>
       </div>
 
       <div id="dim-cards"></div>
@@ -476,6 +500,125 @@ async function loadEvaluations() {
   const { data } = await sb.from('evaluations').select('*').order('total', { ascending: false });
   allEvaluations = data || [];
   renderCompare();
+}
+
+// ═══════════════ 供应商自动补全 ═══════════════
+function getSupplierList() {
+  const map = {};
+  allEvaluations.forEach(e => {
+    const cat = e.category || '福利礼品定制';
+    if (cat !== currentCategory) return;
+    if (!map[e.supplier_name]) map[e.supplier_name] = { name: e.supplier_name, count: 0, avgScore: 0, total: 0 };
+    map[e.supplier_name].count++;
+    map[e.supplier_name].total += e.total;
+  });
+  Object.values(map).forEach(s => { s.avgScore = Math.round(s.total / s.count); });
+  return Object.values(map).sort((a, b) => b.count - a.count);
+}
+
+function onSupplierInput(val) {
+  const dropdown = document.getElementById('supplier-dropdown');
+  const suppliers = getSupplierList();
+  const q = val.trim().toLowerCase();
+  const matched = q ? suppliers.filter(s => s.name.toLowerCase().includes(q)) : suppliers;
+
+  if (!matched.length) { dropdown.classList.remove('show'); updateHistoryHint(val.trim()); return; }
+
+  dropdown.innerHTML = matched.slice(0, 10).map(s =>
+    `<div class="supplier-dropdown-item" onmousedown="selectSupplier('${s.name.replace(/'/g, "\\'")}')">
+      <span class="sd-name">${highlightMatch(s.name, q)}</span>
+      <span class="sd-meta">${s.count}人评价 · 均分${s.avgScore}</span>
+    </div>`
+  ).join('');
+  dropdown.classList.add('show');
+  updateHistoryHint(val.trim());
+}
+
+function highlightMatch(name, q) {
+  if (!q) return name;
+  const idx = name.toLowerCase().indexOf(q);
+  if (idx < 0) return name;
+  return name.slice(0, idx) + '<b style="color:var(--med-blue);">' + name.slice(idx, idx + q.length) + '</b>' + name.slice(idx + q.length);
+}
+
+function selectSupplier(name) {
+  document.getElementById('supplier-name').value = name;
+  hideSupplierDropdown();
+  updateHistoryHint(name);
+}
+
+function hideSupplierDropdown() {
+  document.getElementById('supplier-dropdown').classList.remove('show');
+}
+
+function updateHistoryHint(name) {
+  const hint = document.getElementById('supplier-history-hint');
+  const text = document.getElementById('shh-text');
+  if (!name) { hint.classList.remove('show'); return; }
+
+  const reviewer = document.getElementById('reviewer-name').value.trim();
+  const evals = allEvaluations.filter(e => e.supplier_name === name && (e.category || '福利礼品定制') === currentCategory);
+
+  if (!evals.length) {
+    text.innerHTML = `📦 暂无「${name}」的历史评价`;
+    hint.classList.add('show');
+    return;
+  }
+
+  const avg = Math.round(evals.reduce((s, e) => s + e.total, 0) / evals.length);
+  const myEval = reviewer ? evals.find(e => e.reviewer_name === reviewer) : null;
+
+  if (myEval) {
+    text.innerHTML = `📊 「${name}」已有 ${evals.length} 人评价，均分 ${avg} 分。你已评价过（${myEval.total}分 · ${GRADE_CONFIG[myEval.grade]?.name || myEval.grade}）`;
+  } else {
+    text.innerHTML = `📊 「${name}」已有 ${evals.length} 人评价，均分 ${avg} 分`;
+  }
+  hint.classList.add('show');
+}
+
+function loadHistoryIntoForm() {
+  const name = document.getElementById('supplier-name').value.trim();
+  const reviewer = document.getElementById('reviewer-name').value.trim();
+  if (!name) { alert('请先输入供应商名称'); return; }
+  if (!reviewer) { alert('请先输入你的名字'); return; }
+
+  const myEval = allEvaluations.find(e => e.supplier_name === name && e.reviewer_name === reviewer && (e.category || '福利礼品定制') === currentCategory);
+  if (!myEval) {
+    // 如果没有自己的评价，加载最近一条作为参考
+    const evals = allEvaluations.filter(e => e.supplier_name === name && (e.category || '福利礼品定制') === currentCategory);
+    if (!evals.length) { alert('未找到历史评价'); return; }
+    evals.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    fillFormFromEval(evals[0], true);
+  } else {
+    fillFormFromEval(myEval, false);
+  }
+}
+
+function fillFormFromEval(e, reference) {
+  DIMS.forEach(dim => {
+    const score = e[`d${dim.id.replace('d', '')}_score`] || 0;
+    const anchor = e[`d${dim.id.replace('d', '')}_anchor`];
+    state[dim.id] = { score, anchorPass: anchor };
+    document.getElementById(`slider-${dim.id}`).value = score;
+    document.getElementById(`number-${dim.id}`).value = score;
+    document.getElementById(`display-${dim.id}`).textContent = score;
+    if (anchor === true) setAnchor(dim.id, true);
+    else if (anchor === false) setAnchor(dim.id, false);
+    highlightGrade(dim.id, score);
+  });
+
+  deduct = e.deduct || 0;
+  document.getElementById('deduct-slider').value = deduct;
+  document.getElementById('deduct-number').value = deduct;
+  document.getElementById('pros-input').value = e.pros || '';
+  document.getElementById('cons-input').value = e.cons || '';
+  recalc();
+
+  if (reference) {
+    alert(`📋 已加载「${e.reviewer_name}」的评价作为参考（${e.total}分），你可以在此基础上修改保存`);
+  } else {
+    alert(`📋 已加载你的历史评价（${e.total}分），修改后保存将覆盖原评价`);
+  }
 }
 
 // ═══════════════ 构建DOM ═══════════════
@@ -952,6 +1095,7 @@ function resetAll() {
   document.getElementById('supplier-name').value='';
   document.getElementById('pros-input').value='';
   document.getElementById('cons-input').value='';
+  document.getElementById('supplier-history-hint').classList.remove('show');
   recalc();
 }
 
