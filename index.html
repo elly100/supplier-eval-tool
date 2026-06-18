@@ -851,23 +851,12 @@ function renderCompare() {
     evals = [...evals, ...local.filter(e => (e.category||'福利礼品定制') === currentCategory)];
   } catch(e){}
 
-  // 按当前评审人过滤（普通视图只看自己）
-  if (currentReviewer) {
-    evals = evals.filter(e => e.reviewer_name === currentReviewer);
-  }
-
+  // 显示当前分类下所有评价（不按评审人过滤）
   document.getElementById('saved-count').textContent = evals.length + ' 条';
   document.getElementById('saved-toolbar').style.display = evals.length>0?'flex':'none';
 
-  if (!currentReviewer) {
-    document.getElementById('compare-area').innerHTML='<div class="empty-state">请先输入你的名字，即可查看你的评价记录</div>';
-    document.getElementById('saved-count').textContent = '0 条';
-    document.getElementById('saved-toolbar').style.display = 'none';
-    return;
-  }
-
   if (!evals.length) {
-    document.getElementById('compare-area').innerHTML='<div class="empty-state">你还没有保存过评价<br>在上方填写后点保存</div>';
+    document.getElementById('compare-area').innerHTML='<div class="empty-state">暂无评价记录<br>在上方填写后点保存</div>';
     document.getElementById('saved-count').textContent = '0 条';
     document.getElementById('saved-toolbar').style.display = 'none';
     return;
@@ -877,7 +866,7 @@ function renderCompare() {
   let html = '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th style="text-align:left;">维度</th>';
   sorted.forEach((s,rank) => {
     const rc = rank===0?'rank-1':rank===1?'rank-2':rank===2?'rank-3':'rank-other';
-    html += `<th><span class="rank-badge ${rc}">${rank+1}</span>${s.supplier_name}</th>`;
+    html += `<th><span class="rank-badge ${rc}">${rank+1}</span>${s.supplier_name}<br><span style="font-size:10px;font-weight:400;opacity:.6;">（${s.reviewer_name}）</span></th>`;
   });
   html += '</tr></thead><tbody>';
 
