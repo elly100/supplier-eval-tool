@@ -675,15 +675,13 @@ function renderCompare() {
   sorted.forEach(s => { html += `<td class="${GRADE_CONFIG[s.grade]?.cls||'grade-d'}" style="font-size:16px;">${s.total}</td>`; });
   html += '</tr>';
   html += '<tr class="grade-row"><td>等级</td>';
-  sorted.forEach(s => { html += `<td><span class="result-grade-badge ${GRADE_CONFIG[s.grade]?.cls||'grade-d'}" style="font-size:12px;padding:3px 14px;">${GRADE_CONFIG[s.grade]?.name||s.grade}</span></td>`; });
+  sorted.forEach(s => {
+    const badge = `<span class="result-grade-badge ${GRADE_CONFIG[s.grade]?.cls||'grade-d'}" style="font-size:12px;padding:3px 14px;">${GRADE_CONFIG[s.grade]?.name||s.grade}</span>`;
+    const prosHtml = s.pros ? `<div style="font-size:10px;color:#2E7D32;text-align:left;margin-top:4px;">👍 ${s.pros}</div>` : '';
+    const consHtml = s.cons ? `<div style="font-size:10px;color:#C62828;text-align:left;margin-top:2px;">👎 ${s.cons}</div>` : '';
+    html += `<td>${badge}${prosHtml}${consHtml}</td>`;
+  });
   html += '</tr>';
-  if (sorted.some(s => s.pros || s.cons)) {
-    html += '<tr class="dim-row"><td style="white-space:nowrap;">👍 优点</td>';
-    sorted.forEach(s => { html += `<td style="font-size:11px;color:#2E7D32;text-align:left;">${s.pros||'—'}</td>`; });
-    html += '</tr><tr class="dim-row"><td style="white-space:nowrap;">👎 不足</td>';
-    sorted.forEach(s => { html += `<td style="font-size:11px;color:#C62828;text-align:left;">${s.cons||'—'}</td>`; });
-    html += '</tr>';
-  }
   html += '<tr class="dim-row"><td>操作</td>';
   sorted.forEach(s => { html += `<td>${s.id ? `<button class="btn btn-danger" style="font-size:10px;padding:2px 8px;" onclick="deleteEval('${s.id}')">🗑 删除</button>` : ''}</td>`; });
   html += '</tr>';
