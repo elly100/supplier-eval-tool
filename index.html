@@ -922,7 +922,7 @@ function renderCompare() {
   let html = '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th style="text-align:left;">维度</th>';
   suppliers.forEach((s,rank) => {
     const rc = rank===0?'rank-1':rank===1?'rank-2':rank===2?'rank-3':'rank-other';
-    html += `<th class="compare-supplier-col" onclick="toggleCompareDetail('cd-${rank}')"><span class="rank-badge ${rc}">${rank+1}</span>${s.name}<br><span style="font-size:10px;font-weight:400;opacity:.6;">${s.evals.length}人评价</span><br><span class="cs-expand-hint">▾ 点击展开</span></th>`;
+    html += `<th class="compare-supplier-col" onclick="toggleCompareDetail()"><span class="rank-badge ${rc}">${rank+1}</span>${s.name}<br><span style="font-size:10px;font-weight:400;opacity:.6;">${s.evals.length}人评价</span><br><span class="cs-expand-hint">▾ 点击展开</span></th>`;
   });
   html += '</tr></thead><tbody>';
 
@@ -971,7 +971,7 @@ function renderCompare() {
   html += '</tr>';
 
   // 展开明细行（每个供应商一列对应一个 td）
-  html += `<tr class="compare-detail-row" id="cd-all">`;
+  html += `<tr class="compare-detail-row" id="compare-detail">`;
   html += `<td style="font-weight:600;font-size:12px;">👤 各人评分</td>`;
   suppliers.forEach(s => {
     let detail = '<div class="compare-detail-inner">';
@@ -991,12 +991,11 @@ function renderCompare() {
   document.getElementById('compare-area').innerHTML = html;
 }
 
-function toggleCompareDetail(id) {
-  const row = document.getElementById(id);
+function toggleCompareDetail() {
+  const row = document.getElementById('compare-detail');
   if (!row) return;
   row.classList.toggle('open');
-  // 更新所有提示文字
-  row.parentElement.querySelectorAll('.cs-expand-hint').forEach(el => {
+  document.querySelectorAll('.cs-expand-hint').forEach(el => {
     el.textContent = row.classList.contains('open') ? '▴ 点击收起' : '▾ 点击展开';
   });
 }
