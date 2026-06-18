@@ -55,16 +55,19 @@
   /* 对比区展开明细 */
   .compare-supplier-col { cursor:pointer; position:relative; }
   .compare-supplier-col:hover { opacity:0.85; }
-  .compare-supplier-col .cs-expand-hint { font-size:9px; color:#999; font-weight:400; }
-  .compare-detail-row { display:none; }
-  .compare-detail-row.open { display:table-row; }
-  .compare-detail-row td { background:#F8F9FB; padding:6px 8px !important; }
-  .compare-detail-inner { font-size:11px; line-height:1.7; }
-  .compare-detail-inner .cdi-person { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #eee; }
-  .compare-detail-inner .cdi-person:last-child { border-bottom:none; }
-  .compare-detail-inner .cdi-name { font-weight:600; color:var(--navy); min-width:50px; }
-  .compare-detail-inner .cdi-scores { color:#666; }
-  .compare-detail-inner .cdi-grade { font-size:10px; padding:1px 6px; border-radius:10px; white-space:nowrap; }
+  .compare-supplier-col .cs-expand-hint { font-size:9px; color:#ccc; font-weight:400; }
+  .compare-detail-panel { display:none; margin-top:12px; }
+  .compare-detail-panel.open { display:block; }
+  .compare-detail-panel .cdp-title { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:10px; }
+  .cdp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; }
+  .cdp-card { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:14px 16px; }
+  .cdp-card h4 { font-size:13px; color:var(--navy); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+  .cdp-card h4 .cdp-count { font-size:11px; color:#888; font-weight:400; }
+  .cdp-person { display:flex; align-items:baseline; gap:8px; padding:5px 0; border-bottom:1px solid #f0f0f0; flex-wrap:wrap; }
+  .cdp-person:last-child { border-bottom:none; }
+  .cdp-person .cdp-name { font-weight:600; color:var(--navy); font-size:12px; min-width:50px; }
+  .cdp-person .cdp-scores { font-size:11px; color:#666; }
+  .cdp-person .cdp-grade { font-size:10px; padding:1px 8px; border-radius:10px; white-space:nowrap; }
 
   /* 管理员编辑弹窗 */
   .edit-modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.45); z-index:1000; display:flex; align-items:center; justify-content:center; }
@@ -970,33 +973,33 @@ function renderCompare() {
   });
   html += '</tr>';
 
-  // 展开明细行（每个供应商一列对应一个 td）
-  html += `<tr class="compare-detail-row" id="compare-detail">`;
-  html += `<td style="font-weight:600;font-size:12px;">👤 各人评分</td>`;
+  html += '</tbody></table></div>';
+
+  // 展开明细面板（表格下方，卡片式布局）
+  html += '<div class="compare-detail-panel" id="compare-detail">';
+  html += '<div class="cdp-title">👤 各人评分明细</div><div class="cdp-grid">';
   suppliers.forEach(s => {
-    let detail = '<div class="compare-detail-inner">';
+    html += `<div class="cdp-card"><h4>${s.name} <span class="cdp-count">${s.evals.length}人评价</span></h4>`;
     s.evals.sort((a,b)=>b.total-a.total).forEach(e => {
       const gradeCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
       const gradeName = GRADE_CONFIG[e.grade]?.name||e.grade;
-      detail += `<div class="cdi-person"><span class="cdi-name">${e.reviewer_name}</span>
-        <span class="cdi-scores">设计${e.d1_anchor===false?'0⚠️':e.d1_score} 选品${e.d2_anchor===false?'0⚠️':e.d2_score} 品控${e.d3_anchor===false?'0⚠️':e.d3_score} 交付${e.d4_anchor===false?'0⚠️':e.d4_score} 服务${e.d5_anchor===false?'0⚠️':e.d5_score}${e.deduct>0?' 减'+e.deduct:''}</span>
-        <span class="cdi-grade result-grade-badge ${gradeCls}">${e.total}分·${gradeName}</span></div>`;
+      html += `<div class="cdp-person"><span class="cdp-name">${e.reviewer_name}</span>
+        <span class="cdp-scores">设计${e.d1_anchor===false?'0⚠️':e.d1_score} 选品${e.d2_anchor===false?'0⚠️':e.d2_score} 品控${e.d3_anchor===false?'0⚠️':e.d3_score} 交付${e.d4_anchor===false?'0⚠️':e.d4_score} 服务${e.d5_anchor===false?'0⚠️':e.d5_score}${e.deduct>0?' 减'+e.deduct:''}</span>
+        <span class="cdp-grade result-grade-badge ${gradeCls}">${e.total}分·${gradeName}</span></div>`;
     });
-    detail += '</div>';
-    html += `<td>${detail}</td>`;
+    html += '</div>';
   });
-  html += '</tr>';
+  html += '</div></div>';
 
-  html += '</tbody></table></div>';
   document.getElementById('compare-area').innerHTML = html;
 }
 
 function toggleCompareDetail() {
-  const row = document.getElementById('compare-detail');
-  if (!row) return;
-  row.classList.toggle('open');
+  const panel = document.getElementById('compare-detail');
+  if (!panel) return;
+  panel.classList.toggle('open');
   document.querySelectorAll('.cs-expand-hint').forEach(el => {
-    el.textContent = row.classList.contains('open') ? '▴ 点击收起' : '▾ 点击展开';
+    el.textContent = panel.classList.contains('open') ? '▴ 点击收起' : '▾ 点击展开';
   });
 }
 
