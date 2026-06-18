@@ -52,6 +52,20 @@
   .supplier-history-hint .shh-text { color:#666; }
   .supplier-history-hint .shh-link { color:var(--med-blue); cursor:pointer; font-weight:600; text-decoration:underline; }
 
+  /* 对比区展开明细 */
+  .compare-supplier-col { cursor:pointer; position:relative; }
+  .compare-supplier-col:hover { opacity:0.85; }
+  .compare-supplier-col .cs-expand-hint { font-size:9px; color:#999; font-weight:400; }
+  .compare-detail-row { display:none; }
+  .compare-detail-row.open { display:table-row; }
+  .compare-detail-row td { background:#F8F9FB; padding:6px 8px !important; }
+  .compare-detail-inner { font-size:11px; line-height:1.7; }
+  .compare-detail-inner .cdi-person { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #eee; }
+  .compare-detail-inner .cdi-person:last-child { border-bottom:none; }
+  .compare-detail-inner .cdi-name { font-weight:600; color:var(--navy); min-width:50px; }
+  .compare-detail-inner .cdi-scores { color:#666; }
+  .compare-detail-inner .cdi-grade { font-size:10px; padding:1px 6px; border-radius:10px; white-space:nowrap; }
+
   /* 管理员编辑弹窗 */
   .edit-modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.45); z-index:1000; display:flex; align-items:center; justify-content:center; }
   .edit-modal { background:var(--white); border-radius:var(--radius); padding:24px 28px; max-width:560px; width:90%; max-height:85vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.2); }
@@ -867,14 +881,12 @@ function checkAdmin() {
 
 // ═══════════════ 对比渲染 ═══════════════
 function renderCompare() {
-  const currentReviewer = document.getElementById('reviewer-name').value.trim();
   let evals = [...allEvaluations].filter(e => (e.category||'福利礼品定制') === currentCategory);
   try {
     const local = JSON.parse(localStorage.getItem('local_evals')||'[]');
     evals = [...evals, ...local.filter(e => (e.category||'福利礼品定制') === currentCategory)];
   } catch(e){}
 
-  // 显示当前分类下所有评价（不按评审人过滤）
   document.getElementById('saved-count').textContent = evals.length + ' 条';
   document.getElementById('saved-toolbar').style.display = evals.length>0?'flex':'none';
 
@@ -885,50 +897,108 @@ function renderCompare() {
     return;
   }
 
-  const sorted = [...evals].sort((a,b) => b.total-a.total);
+  // 按供应商分组
+  const supplierMap = {};
+  evals.forEach(e => {
+    if (!supplierMap[e.supplier_name]) supplierMap[e.supplier_name] = [];
+    supplierMap[e.supplier_name].push(e);
+  });
+
+  // 计算每个供应商的均分，按均分排序
+  const suppliers = Object.entries(supplierMap).map(([name, evs]) => {
+    const avgD1 = Math.round(evs.reduce((s,e)=>s+(e.d1_anchor===false?0:e.d1_score),0)/evs.length);
+    const avgD2 = Math.round(evs.reduce((s,e)=>s+(e.d2_anchor===false?0:e.d2_score),0)/evs.length);
+    const avgD3 = Math.round(evs.reduce((s,e)=>s+(e.d3_anchor===false?0:e.d3_score),0)/evs.length);
+    const avgD4 = Math.round(evs.reduce((s,e)=>s+(e.d4_anchor===false?0:e.d4_score),0)/evs.length);
+    const avgD5 = Math.round(evs.reduce((s,e)=>s+(e.d5_anchor===false?0:e.d5_score),0)/evs.length);
+    const avgDeduct = Math.round(evs.reduce((s,e)=>s+(e.deduct||0),0)/evs.length);
+    const avgTotal = avgD1+avgD2+avgD3+avgD4+avgD5-avgDeduct;
+    const avgGrade = calcResult({d1:{score:avgD1,anchorPass:true},d2:{score:avgD2,anchorPass:true},d3:{score:avgD3,anchorPass:true},d4:{score:avgD4,anchorPass:true},d5:{score:avgD5,anchorPass:true}},avgDeduct).gradeKey;
+    return { name, evals:evs, avgD1,avgD2,avgD3,avgD4,avgD5,avgDeduct,avgTotal,avgGrade };
+  }).sort((a,b) => b.avgTotal - a.avgTotal);
+
+  const cm = {'卓越':'var(--green)','优秀':'var(--med-blue)','良好':'var(--gold)','合格':'#E65100','不合格':'var(--red)'};
+
   let html = '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th style="text-align:left;">维度</th>';
-  sorted.forEach((s,rank) => {
+  suppliers.forEach((s,rank) => {
     const rc = rank===0?'rank-1':rank===1?'rank-2':rank===2?'rank-3':'rank-other';
-    html += `<th><span class="rank-badge ${rc}">${rank+1}</span>${s.supplier_name}<br><span style="font-size:10px;font-weight:400;opacity:.6;">（${s.reviewer_name}）</span></th>`;
+    html += `<th class="compare-supplier-col" onclick="toggleCompareDetail('cd-${rank}')"><span class="rank-badge ${rc}">${rank+1}</span>${s.name}<br><span style="font-size:10px;font-weight:400;opacity:.6;">${s.evals.length}人评价</span><br><span class="cs-expand-hint">▾ 点击展开</span></th>`;
   });
   html += '</tr></thead><tbody>';
 
+  // 各维度均分行
   ['d1','d2','d3','d4','d5'].forEach(did => {
     const dim = DIMS.find(d=>d.id===did);
     html += `<tr class="dim-row"><td>${dim.name}（${dim.weight}）</td>`;
-    sorted.forEach(s => {
-      const sc = s[did+'_score'], anch = s[did+'_anchor'], eff = anch===false?0:sc;
-      const hit = dim.ranges.find(r=>eff>=r.min&&eff<=r.max);
-      const gn = anch===false?'不合格':(hit?hit.name:'-');
-      const cm = {'卓越':'var(--green)','优秀':'var(--med-blue)','良好':'var(--gold)','合格':'#E65100','不合格':'var(--red)'};
-      html += `<td style="color:${cm[gn]||'#999'};font-weight:600;">${eff}<span style="font-weight:400;font-size:10px;opacity:.5;">/${dim.weight}</span><br><span style="font-size:10px;">${gn}</span></td>`;
+    suppliers.forEach(s => {
+      const avgKey = 'avgD'+did.replace('d','');
+      const avg = s[avgKey];
+      const hit = dim.ranges.find(r=>avg>=r.min&&avg<=r.max);
+      const gn = hit?hit.name:'-';
+      html += `<td style="color:${cm[gn]||'#999'};font-weight:600;">${avg}<span style="font-weight:400;font-size:10px;opacity:.5;">/${dim.weight}</span><br><span style="font-size:10px;">${gn}</span></td>`;
     });
     html += '</tr>';
   });
-  if (sorted.some(s=>s.deduct>0)) {
-    html += '<tr class="dim-row"><td>减分项</td>';
-    sorted.forEach(s => { html += `<td style="color:${s.deduct>0?'var(--red)':'#999'}">${s.deduct>0?'-'+s.deduct:'0'}</td>`; });
-    html += '</tr>';
-  }
-  html += '<tr class="total-row"><td>总分</td>';
-  sorted.forEach(s => { html += `<td class="${GRADE_CONFIG[s.grade]?.cls||'grade-d'}" style="font-size:16px;">${s.total}</td>`; });
-  html += '</tr>';
-  html += '<tr class="grade-row"><td>等级</td>';
-  sorted.forEach(s => { html += `<td><span class="result-grade-badge ${GRADE_CONFIG[s.grade]?.cls||'grade-d'}" style="font-size:12px;padding:3px 14px;">${GRADE_CONFIG[s.grade]?.name||s.grade}</span></td>`; });
-  html += '</tr>';
-  if (sorted.some(s => s.pros || s.cons)) {
-    html += '<tr class="feedback-row"><td>优点</td>';
-    sorted.forEach(s => { html += `<td><div class="cell-pros">${s.pros||'—'}</div></td>`; });
-    html += '</tr><tr class="feedback-row"><td>不足</td>';
-    sorted.forEach(s => { html += `<td><div class="cell-cons">${s.cons||'—'}</div></td>`; });
-    html += '</tr>';
-  }
-  html += '<tr class="dim-row"><td></td>';
-  sorted.forEach(() => { html += `<td></td>`; });
-  html += '</tr>';
-  html += '</tbody></table></div>';
 
+  // 减分均分
+  if (suppliers.some(s=>s.avgDeduct>0)) {
+    html += '<tr class="dim-row"><td>减分项</td>';
+    suppliers.forEach(s => { html += `<td style="color:${s.avgDeduct>0?'var(--red)':'#999'}">${s.avgDeduct>0?'-'+s.avgDeduct:'0'}</td>`; });
+    html += '</tr>';
+  }
+
+  // 总分均分
+  html += '<tr class="total-row"><td>均分</td>';
+  suppliers.forEach(s => { html += `<td class="${GRADE_CONFIG[s.avgGrade]?.cls||'grade-d'}" style="font-size:16px;">${s.avgTotal}</td>`; });
+  html += '</tr>';
+
+  // 等级行
+  html += '<tr class="grade-row"><td>等级</td>';
+  suppliers.forEach(s => { html += `<td><span class="result-grade-badge ${GRADE_CONFIG[s.avgGrade]?.cls||'grade-d'}" style="font-size:12px;padding:3px 14px;">${GRADE_CONFIG[s.avgGrade]?.name||s.avgGrade}</span></td>`; });
+  html += '</tr>';
+
+  // 优缺点汇总（合并所有人的）
+  html += '<tr class="feedback-row"><td>优点</td>';
+  suppliers.forEach(s => {
+    const allPros = s.evals.filter(e=>e.pros).map(e=>`<span style="color:var(--navy);font-weight:500;">${e.reviewer_name}:</span> ${e.pros}`).join('；');
+    html += `<td><div class="cell-pros">${allPros||'—'}</div></td>`;
+  });
+  html += '</tr><tr class="feedback-row"><td>不足</td>';
+  suppliers.forEach(s => {
+    const allCons = s.evals.filter(e=>e.cons).map(e=>`<span style="color:var(--navy);font-weight:500;">${e.reviewer_name}:</span> ${e.cons}`).join('；');
+    html += `<td><div class="cell-cons">${allCons||'—'}</div></td>`;
+  });
+  html += '</tr>';
+
+  // 展开明细行（每个供应商一列对应一个 td）
+  html += `<tr class="compare-detail-row" id="cd-all">`;
+  html += `<td style="font-weight:600;font-size:12px;">👤 各人评分</td>`;
+  suppliers.forEach(s => {
+    let detail = '<div class="compare-detail-inner">';
+    s.evals.sort((a,b)=>b.total-a.total).forEach(e => {
+      const gradeCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
+      const gradeName = GRADE_CONFIG[e.grade]?.name||e.grade;
+      detail += `<div class="cdi-person"><span class="cdi-name">${e.reviewer_name}</span>
+        <span class="cdi-scores">设计${e.d1_anchor===false?'0⚠️':e.d1_score} 选品${e.d2_anchor===false?'0⚠️':e.d2_score} 品控${e.d3_anchor===false?'0⚠️':e.d3_score} 交付${e.d4_anchor===false?'0⚠️':e.d4_score} 服务${e.d5_anchor===false?'0⚠️':e.d5_score}${e.deduct>0?' 减'+e.deduct:''}</span>
+        <span class="cdi-grade result-grade-badge ${gradeCls}">${e.total}分·${gradeName}</span></div>`;
+    });
+    detail += '</div>';
+    html += `<td>${detail}</td>`;
+  });
+  html += '</tr>';
+
+  html += '</tbody></table></div>';
   document.getElementById('compare-area').innerHTML = html;
+}
+
+function toggleCompareDetail(id) {
+  const row = document.getElementById(id);
+  if (!row) return;
+  row.classList.toggle('open');
+  // 更新所有提示文字
+  row.parentElement.querySelectorAll('.cs-expand-hint').forEach(el => {
+    el.textContent = row.classList.contains('open') ? '▴ 点击收起' : '▾ 点击展开';
+  });
 }
 
 // ═══════════════ 管理员渲染 ═══════════════
