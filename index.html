@@ -15,53 +15,11 @@
   body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--body); line-height:1.6; padding:20px; min-height:100vh; }
   .container { max-width:960px; margin:0 auto; }
 
-  /* ═══════ 登录遮罩 ═══════ */
-  .auth-overlay {
-    position:fixed; inset:0; background:linear-gradient(135deg,var(--navy),#2a5090);
-    display:flex; align-items:center; justify-content:center; z-index:1000;
-  }
-  .auth-overlay.hidden { display:none; }
-  .auth-card {
-    background:var(--white); border-radius:16px; padding:40px 36px; width:400px; max-width:90vw;
-    box-shadow:0 20px 60px rgba(0,0,0,0.3);
-  }
-  .auth-card h1 { font-size:22px; color:var(--navy); text-align:center; margin-bottom:6px; }
-  .auth-card .subtitle { font-size:13px; color:#999; text-align:center; margin-bottom:28px; }
-  .auth-card label { display:block; font-size:13px; font-weight:600; color:var(--navy); margin-bottom:4px; margin-top:16px; }
-  .auth-card input {
-    width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:8px;
-    font-size:14px; outline:none; transition:border-color 0.2s;
-  }
-  .auth-card input:focus { border-color:var(--med-blue); }
-  .auth-card .auth-btn {
-    width:100%; padding:12px; border:none; border-radius:8px; font-size:15px;
-    font-weight:700; cursor:pointer; margin-top:24px; transition:opacity 0.15s;
-  }
-  .auth-card .auth-btn:hover { opacity:0.85; }
-  .auth-card .login-btn { background:var(--navy); color:var(--white); }
-  .auth-card .register-btn { background:var(--white); color:var(--navy); border:1.5px solid var(--border); margin-top:10px; }
-  .auth-card .auth-switch { text-align:center; margin-top:16px; font-size:13px; color:#999; }
-  .auth-card .auth-switch a { color:var(--med-blue); cursor:pointer; font-weight:600; }
-  .auth-error { background:#FFEBEE; color:var(--red); padding:10px 14px; border-radius:8px; font-size:13px; margin-top:12px; display:none; }
-  .auth-error.show { display:block; }
+  .header { text-align:center; padding:28px 20px 20px; background:linear-gradient(135deg,var(--navy),#2a5090); color:var(--white); border-radius:var(--radius); margin-bottom:20px; }
+  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .header p { font-size:13px; opacity:0.8; }
 
-  /* ═══════ 用户栏 ═══════ */
-  .user-bar {
-    background:var(--card); border-radius:var(--radius); padding:14px 24px;
-    margin-bottom:20px; border:1px solid var(--border);
-    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
-  }
-  .user-bar .user-info { display:flex; align-items:center; gap:12px; font-size:14px; }
-  .user-bar .role-badge {
-    padding:3px 12px; border-radius:20px; font-size:12px; font-weight:700;
-  }
-  .role-admin { background:#E8F5E9; color:var(--green); }
-  .role-reviewer { background:var(--light-bg); color:var(--med-blue); }
-
-  .btn {
-    padding:8px 20px; border:none; border-radius:8px; font-size:13px;
-    font-weight:600; cursor:pointer; transition:opacity 0.15s; white-space:nowrap;
-  }
+  .btn { padding:8px 20px; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:opacity 0.15s; white-space:nowrap; }
   .btn:hover { opacity:0.85; }
   .btn-primary { background:var(--navy); color:var(--white); }
   .btn-success { background:var(--green); color:var(--white); }
@@ -70,26 +28,13 @@
   .btn-export { background:var(--med-blue); color:var(--white); }
   .btn-sm { padding:5px 14px; font-size:12px; }
 
-  /* ═══════ Header ═══════ */
-  .header {
-    text-align:center; padding:28px 20px 20px;
-    background:linear-gradient(135deg,var(--navy),#2a5090);
-    color:var(--white); border-radius:var(--radius); margin-bottom:20px;
-  }
-  .header h1 { font-size:22px; font-weight:700; margin-bottom:6px; }
-  .header p { font-size:13px; opacity:0.8; }
-
-  /* ═══════ 维度卡片 ═══════ */
   .supplier-section {
     background:var(--card); border-radius:var(--radius); padding:20px 24px;
     margin-bottom:20px; border:1px solid var(--border);
     display:flex; align-items:center; gap:14px; flex-wrap:wrap;
   }
   .supplier-section label { font-size:14px; font-weight:600; color:var(--navy); }
-  .supplier-section input[type="text"] {
-    padding:8px 14px; border:1.5px solid var(--border); border-radius:8px;
-    font-size:14px; width:200px; outline:none;
-  }
+  .supplier-section input[type="text"] { padding:8px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; width:200px; outline:none; }
   .supplier-section input[type="text"]:focus { border-color:var(--med-blue); }
 
   .dim-card { background:var(--card); border-radius:var(--radius); margin-bottom:16px; border:1px solid var(--border); overflow:hidden; }
@@ -146,7 +91,6 @@
   .bottomline-item.checked { background:#FFEBEE; color:var(--red); font-weight:600; }
   .bottomline-item input { display:none; }
 
-  /* ═══════ 结果 ═══════ */
   .result-section { background:var(--card); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; margin-top:8px; }
   .result-header { background:linear-gradient(135deg,var(--navy),#2a5090); color:var(--white); padding:18px 24px; display:flex; align-items:center; justify-content:space-between; }
   .result-header h2 { font-size:16px; font-weight:700; }
@@ -173,7 +117,6 @@
   .action-c { background:#FFF8E1; border:1px solid #FFE082; color:#E65100; }
   .action-d { background:#FFEBEE; border:1px solid #EF9A9A; color:#B71C1C; }
 
-  /* ═══════ 对比区 ═══════ */
   .saved-section { background:var(--card); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; margin-top:24px; }
   .saved-header { background:linear-gradient(135deg,var(--navy),#2a5090); color:var(--white); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; }
   .saved-header h2 { font-size:15px; font-weight:700; }
@@ -199,7 +142,6 @@
   .rank-other { background:#E0E0E0; color:#666; }
   .saved-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
 
-  /* ═══════ Tab 切换 ═══════ */
   .tab-bar { display:flex; gap:0; margin-bottom:20px; }
   .tab-btn { padding:10px 24px; border:1.5px solid var(--border); background:var(--white); font-size:14px; font-weight:600; color:var(--body); cursor:pointer; transition:all 0.15s; }
   .tab-btn:first-child { border-radius:8px 0 0 8px; }
@@ -208,13 +150,12 @@
   .tab-content { display:none; }
   .tab-content.active { display:block; }
 
-  /* ═══════ 管理员汇总 ═══════ */
-  .admin-summary { margin-top:20px; }
-  .admin-summary h3 { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:12px; }
+  .admin-prompt { text-align:center; padding:40px 20px; }
+  .admin-prompt input { padding:10px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:14px; width:200px; margin:0 8px; outline:none; }
+  .admin-prompt input:focus { border-color:var(--med-blue); }
 
   @media (max-width:640px) {
     body { padding:10px; }
-    .auth-card { padding:24px 20px; }
     .supplier-section { flex-direction:column; align-items:stretch; }
     .supplier-section input[type="text"] { width:100%; }
     .grade-ref { grid-template-columns:repeat(3,1fr); }
@@ -223,143 +164,95 @@
 </style>
 </head>
 <body>
-
-<!-- ═══════════════ 登录遮罩 ═══════════════ -->
-<div class="auth-overlay" id="auth-overlay">
-  <div class="auth-card">
-    <h1>🔒 供应商评价工具</h1>
-    <div class="subtitle">请登录后使用</div>
-
-    <div id="auth-login">
-      <label>邮箱</label>
-      <input type="email" id="login-email" placeholder="输入邮箱">
-      <label>密码</label>
-      <input type="password" id="login-password" placeholder="输入密码">
-      <button class="auth-btn login-btn" onclick="doLogin()">登 录</button>
-      <div class="auth-switch">还没有账号？<a onclick="showRegister()">注册一个</a></div>
-    </div>
-
-    <div id="auth-register" style="display:none;">
-      <label>姓名</label>
-      <input type="text" id="reg-name" placeholder="输入姓名">
-      <label>邮箱</label>
-      <input type="email" id="reg-email" placeholder="输入邮箱">
-      <label>密码</label>
-      <input type="password" id="reg-password" placeholder="至少6位密码">
-      <button class="auth-btn login-btn" onclick="doRegister()">注 册</button>
-      <div class="auth-switch">已有账号？<a onclick="showLogin()">去登录</a></div>
-    </div>
-
-    <div class="auth-error" id="auth-error"></div>
-  </div>
-</div>
-
-<!-- ═══════════════ 主应用 ═══════════════ -->
-<div class="container" id="app" style="display:none;">
-
-  <!-- 用户栏 -->
-  <div class="user-bar">
-    <div class="user-info">
-      <span id="user-name"></span>
-      <span class="role-badge" id="user-role"></span>
-    </div>
-    <button class="btn btn-outline btn-sm" onclick="doLogout()">退出登录</button>
-  </div>
-
+<div class="container">
   <div class="header">
     <h1>福利定制供应商评价工具</h1>
     <p>输入各维度分数与锚点判定，自动计算等级并给出管理建议</p>
   </div>
 
+  <!-- 评审人 + 供应商名 -->
+  <div class="supplier-section">
+    <label>你的名字</label>
+    <input type="text" id="reviewer-name" placeholder="输入你的名字…" style="width:140px;">
+    <label>供应商名称</label>
+    <input type="text" id="supplier-name" placeholder="输入供应商名称…">
+    <button class="btn btn-success" onclick="saveCurrent()">💾 保存</button>
+    <button class="btn btn-outline" onclick="resetAll()">🔄 重置</button>
+  </div>
+
+  <div id="dim-cards"></div>
+
+  <div class="deduct-card">
+    <div class="deduct-title">⚠️ 减分项（最高减10分）</div>
+    <div class="deduct-desc">触及底线红线的情况</div>
+    <div class="score-row">
+      <label>减分</label>
+      <div class="score-slider-wrap"><input type="range" class="score-slider" id="deduct-slider" min="0" max="10" value="0" step="1"></div>
+      <input type="number" class="score-number" id="deduct-number" min="0" max="10" value="0" step="1">
+      <span class="score-max">/ 10分</span>
+    </div>
+    <div class="bottomline-check" id="bottomline-checks"></div>
+  </div>
+
+  <div class="result-section">
+    <div class="result-header">
+      <h2>评价结果</h2>
+      <span id="supplier-label" style="font-size:13px;opacity:0.7;"></span>
+    </div>
+    <div class="result-body">
+      <div class="result-score-big">
+        <div class="score-val" id="result-total" style="color:var(--navy);">0</div>
+        <div class="score-label">总分（五维度合计 - 减分）</div>
+        <div class="result-grade-badge grade-b" id="result-badge">B · 合格</div>
+      </div>
+      <div id="anchor-warnings"></div>
+      <div class="result-details" id="result-bars"></div>
+      <div id="result-action"></div>
+    </div>
+  </div>
+
   <!-- Tab 切换 -->
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('eval')">📝 评价</button>
-    <button class="tab-btn" onclick="switchTab('compare')">📊 对比</button>
-    <button class="tab-btn" id="tab-admin" onclick="switchTab('admin')" style="display:none;">👑 管理员</button>
+  <div class="tab-bar" style="margin-top:24px;">
+    <button class="tab-btn active" onclick="switchTab('compare')">📊 全部对比</button>
+    <button class="tab-btn" onclick="switchTab('admin')">👑 管理员</button>
   </div>
 
-  <!-- ═══════ 评价 Tab ═══════ -->
-  <div class="tab-content active" id="tab-eval">
-    <div class="supplier-section">
-      <label>供应商名称</label>
-      <input type="text" id="supplier-name" placeholder="输入供应商名称…">
-      <button class="btn btn-success" onclick="saveCurrent()">💾 保存</button>
-      <button class="btn btn-outline" onclick="resetAll()">🔄 重置</button>
-    </div>
-
-    <div id="dim-cards"></div>
-
-    <div class="deduct-card">
-      <div class="deduct-title">⚠️ 减分项（最高减10分）</div>
-      <div class="deduct-desc">触及底线红线的情况</div>
-      <div class="score-row">
-        <label>减分</label>
-        <div class="score-slider-wrap"><input type="range" class="score-slider" id="deduct-slider" min="0" max="10" value="0" step="1"></div>
-        <input type="number" class="score-number" id="deduct-number" min="0" max="10" value="0" step="1">
-        <span class="score-max">/ 10分</span>
-      </div>
-      <div class="bottomline-check" id="bottomline-checks"></div>
-    </div>
-
-    <div class="result-section">
-      <div class="result-header">
-        <h2>评价结果</h2>
-        <span id="supplier-label" style="font-size:13px;opacity:0.7;"></span>
-      </div>
-      <div class="result-body">
-        <div class="result-score-big">
-          <div class="score-val" id="result-total" style="color:var(--navy);">0</div>
-          <div class="score-label">总分（五维度合计 - 减分）</div>
-          <div class="result-grade-badge grade-b" id="result-badge">B · 合格</div>
-        </div>
-        <div id="anchor-warnings"></div>
-        <div class="result-details" id="result-bars"></div>
-        <div id="result-action"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════ 对比 Tab ═══════ -->
-  <div class="tab-content" id="tab-compare">
+  <div class="tab-content active" id="tab-compare">
     <div class="saved-section">
       <div class="saved-header">
-        <h2>📊 我的评价对比</h2>
-        <span class="count" id="saved-count">0 家</span>
+        <h2>📊 供应商评价对比</h2>
+        <span class="count" id="saved-count">0 条</span>
       </div>
       <div class="saved-body">
-        <div id="saved-chips"></div>
         <div class="saved-toolbar" id="saved-toolbar" style="display:none;">
           <button class="btn btn-export btn-sm" onclick="exportTable()">📋 复制对比表格</button>
-          <button class="btn btn-danger" onclick="clearMyEvals()">🗑️ 清空我的</button>
         </div>
         <div id="compare-area"></div>
       </div>
     </div>
   </div>
 
-  <!-- ═══════ 管理员 Tab ═══════ -->
   <div class="tab-content" id="tab-admin">
     <div class="saved-section">
       <div class="saved-header">
-        <h2>👑 全部评价汇总</h2>
-        <span class="count" id="admin-count">0 条</span>
+        <h2>👑 管理员视图</h2>
       </div>
-      <div class="saved-body">
-        <div class="saved-toolbar">
-          <button class="btn btn-export btn-sm" onclick="exportAdminTable()">📋 复制汇总表格</button>
+      <div class="saved-body" id="admin-body">
+        <div class="admin-prompt" id="admin-prompt">
+          <p style="margin-bottom:12px;color:#999;">请输入管理员密码</p>
+          <input type="password" id="admin-password" placeholder="管理员密码">
+          <button class="btn btn-primary" onclick="checkAdmin()">确认</button>
         </div>
-        <div id="admin-area"></div>
+        <div id="admin-area" style="display:none;"></div>
       </div>
     </div>
   </div>
-
 </div>
 
 <script>
-// ═══════════════ Supabase ═══════════════
 const SUPABASE_URL = 'https://hqxryvnbhxhhtdrotdep.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Sy_VwKGuquldC9vQlwcCYw_0zJAfdOE';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxeHJ5dm5iaHhoaHRkcm90ZGVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NDIwNTYsImV4cCI6MjA5NzMxODA1Nn0.5yN8cvPWEDk7s2Lo8kfgk8sRQG7rMrT8jOzyx9-uXK4';
+const ADMIN_PASSWORD = 'ls2024';
 
 // ═══════════════ 数据定义 ═══════════════
 const DIMS = [
@@ -393,82 +286,25 @@ const GRADE_CONFIG = {
 const state = {};
 DIMS.forEach(d => { state[d.id] = { score:0, anchorPass:null }; });
 let deduct = 0;
-let currentUser = null;
-let currentRole = 'reviewer';
-let myEvaluations = [];
 let allEvaluations = [];
+let sb = null;
 
-// ═══════════════ 认证 ═══════════════
-function showLogin() { document.getElementById('auth-login').style.display='block'; document.getElementById('auth-register').style.display='none'; }
-function showRegister() { document.getElementById('auth-login').style.display='none'; document.getElementById('auth-register').style.display='block'; }
-function showAuthError(msg) { const el=document.getElementById('auth-error'); el.textContent=msg; el.classList.add('show'); }
-
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  if (!email||!password) { showAuthError('请输入邮箱和密码'); return; }
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) { showAuthError(error.message); }
-}
-
-async function doRegister() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const password = document.getElementById('reg-password').value;
-  if (!email||!password) { showAuthError('请输入邮箱和密码'); return; }
-  if (password.length < 6) { showAuthError('密码至少6位'); return; }
-  const { error } = await sb.auth.signUp({ email, password, options:{ data:{ display_name: name || '' } } });
-  if (error) { showAuthError(error.message); return; }
-  alert('✅ 注册成功！如果要求验证邮箱，请查收邮件后登录。');
-  showLogin();
-}
-
-async function doLogout() {
-  await sb.auth.signOut();
-  location.reload();
-}
-
-// ═══════════════ 认证状态监听 ═══════════════
-sb.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) {
-    currentUser = session.user;
-    document.getElementById('auth-overlay').classList.add('hidden');
-    document.getElementById('app').style.display='block';
-
-    // 获取角色
-    const { data: profile } = await sb.from('profiles').select('role, display_name').eq('id', currentUser.id).single();
-    currentRole = profile?.role || 'reviewer';
-    const displayName = profile?.display_name || currentUser.email;
-
-    document.getElementById('user-name').textContent = displayName;
-    const roleEl = document.getElementById('user-role');
-    roleEl.textContent = currentRole === 'admin' ? '👑 管理员' : '📝 评审人';
-    roleEl.className = 'role-badge ' + (currentRole === 'admin' ? 'role-admin' : 'role-reviewer');
-
-    // 管理员 tab
-    document.getElementById('tab-admin').style.display = currentRole === 'admin' ? '' : 'none';
-
-    // 加载数据
-    await loadMyEvaluations();
-    if (currentRole === 'admin') await loadAllEvaluations();
-  } else {
-    currentUser = null;
-    document.getElementById('auth-overlay').classList.remove('hidden');
-    document.getElementById('app').style.display='none';
+// 初始化 Supabase（延迟，因为需要正确的 key）
+async function initSupabase() {
+  try {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    await loadEvaluations();
+  } catch(e) {
+    console.warn('Supabase 连接失败，使用本地模式', e);
   }
-});
+}
 
 // ═══════════════ 数据加载 ═══════════════
-async function loadMyEvaluations() {
-  const { data } = await sb.from('evaluations').select('*').eq('user_id', currentUser.id).order('total', { ascending: false });
-  myEvaluations = data || [];
-  renderCompare();
-}
-
-async function loadAllEvaluations() {
-  const { data } = await sb.from('evaluations').select('*, profiles(display_name)').order('total', { ascending: false });
+async function loadEvaluations() {
+  if (!sb) return;
+  const { data } = await sb.from('evaluations').select('*').order('total', { ascending: false });
   allEvaluations = data || [];
-  renderAdmin();
+  renderCompare();
 }
 
 // ═══════════════ 构建DOM ═══════════════
@@ -612,12 +448,12 @@ function recalc() {
   } else { warnEl.innerHTML=''; }
 
   const barColors={'卓越':'linear-gradient(90deg,#43A047,#66BB6A)','优秀':'linear-gradient(90deg,#1E88E5,#42A5F5)','良好':'linear-gradient(90deg,#F9A825,#FDD835)','合格':'linear-gradient(90deg,#E65100,#FF8F00)','不合格':'linear-gradient(90deg,#C62828,#EF5350)'};
-  const scoreTextColors={'卓越':'var(--green)','优秀':'var(--med-blue)','良好':'var(--gold)','合格':'#E65100','不合格':'var(--red)'};
+  const stc={'卓越':'var(--green)','优秀':'var(--med-blue)','良好':'var(--gold)','合格':'#E65100','不合格':'var(--red)'};
   document.getElementById('result-bars').innerHTML = details.map(b=>`
     <div class="result-bar-row">
       <div class="result-bar-label">${b.name}</div>
       <div class="result-bar-track"><div class="result-bar-fill" style="width:${b.pct}%;background:${barColors[b.gradeName]||barColors['不合格']}">${b.gradeName}</div></div>
-      <div class="result-bar-score" style="color:${scoreTextColors[b.gradeName]||'#999'}">${b.score}/${b.max}</div>
+      <div class="result-bar-score" style="color:${stc[b.gradeName]||'#999'}">${b.score}/${b.max}</div>
     </div>`).join('')+(deduct>0?`
     <div class="result-bar-row">
       <div class="result-bar-label" style="color:var(--red);">减分项</div>
@@ -628,16 +464,18 @@ function recalc() {
   document.getElementById('result-action').innerHTML = `<div class="action-box ${grade.actionCls}"><h3>📋 ${grade.name}（${grade.range}）—— 后续管理动作</h3><p>${grade.action}</p></div>`;
 }
 
-// ═══════════════ 保存到 Supabase ═══════════════
+// ═══════════════ 保存 ═══════════════
 async function saveCurrent() {
-  const name = document.getElementById('supplier-name').value.trim();
-  if (!name) { alert('请先输入供应商名称'); return; }
+  const reviewer = document.getElementById('reviewer-name').value.trim();
+  const supplier = document.getElementById('supplier-name').value.trim();
+  if (!reviewer) { alert('请输入你的名字'); return; }
+  if (!supplier) { alert('请输入供应商名称'); return; }
   const allAnchored = DIMS.every(d => state[d.id].anchorPass !== null);
   if (!allAnchored) { alert('请为所有维度判定锚点'); return; }
 
   const { finalScore, gradeKey } = calcResult(state, deduct);
   const row = {
-    user_id: currentUser.id, supplier_name: name,
+    reviewer_name: reviewer, supplier_name: supplier,
     d1_score: state.d1.score, d1_anchor: state.d1.anchorPass,
     d2_score: state.d2.score, d2_anchor: state.d2.anchorPass,
     d3_score: state.d3.score, d3_anchor: state.d3.anchorPass,
@@ -646,53 +484,70 @@ async function saveCurrent() {
     deduct, total: finalScore, grade: gradeKey,
   };
 
-  const { error } = await sb.from('evaluations').upsert(row, { onConflict:'user_id,supplier_name' });
-  if (error) { alert('保存失败：' + error.message); return; }
+  if (sb) {
+    const { error } = await sb.from('evaluations').upsert(row, { onConflict:'reviewer_name,supplier_name' });
+    if (error) { alert('保存失败：' + error.message); return; }
+  } else {
+    // 本地模式
+    let local = JSON.parse(localStorage.getItem('local_evals')||'[]');
+    const idx = local.findIndex(e => e.reviewer_name===reviewer && e.supplier_name===supplier);
+    if (idx>=0) local[idx] = row; else local.push(row);
+    localStorage.setItem('local_evals', JSON.stringify(local));
+  }
 
-  alert(`✅ ${name} 评价已保存（${finalScore}分 · ${GRADE_CONFIG[gradeKey].name}）`);
-  resetAll(true);
-  await loadMyEvaluations();
-  if (currentRole === 'admin') await loadAllEvaluations();
+  alert(`✅ ${supplier} 评价已保存（${finalScore}分 · ${GRADE_CONFIG[gradeKey].name}）`);
+  resetAll();
+  await loadEvaluations();
 }
 
 async function deleteEval(id) {
   if (!confirm('确定删除？')) return;
-  await sb.from('evaluations').delete().eq('id', id);
-  await loadMyEvaluations();
-  if (currentRole === 'admin') await loadAllEvaluations();
+  if (sb) { await sb.from('evaluations').delete().eq('id', id); }
+  await loadEvaluations();
 }
 
-async function clearMyEvals() {
-  if (!confirm('确定清空你的所有评价？')) return;
-  await sb.from('evaluations').delete().eq('user_id', currentUser.id);
-  await loadMyEvaluations();
-}
-
-// ═══════════════ Tab 切换 ═══════════════
+// ═══════════════ Tab ═══════════════
 function switchTab(name) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['eval','compare','admin'][i]===name));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
 }
 
-// ═══════════════ 对比渲染（我的） ═══════════════
-function renderCompare() {
-  document.getElementById('saved-count').textContent = myEvaluations.length + ' 家';
-  document.getElementById('saved-toolbar').style.display = myEvaluations.length>0?'flex':'none';
+// ═══════════════ 管理员 ═══════════════
+function checkAdmin() {
+  const pwd = document.getElementById('admin-password').value;
+  if (pwd === ADMIN_PASSWORD) {
+    document.getElementById('admin-prompt').style.display='none';
+    document.getElementById('admin-area').style.display='block';
+    renderAdmin();
+  } else {
+    alert('密码错误');
+  }
+}
 
-  const chipsEl = document.getElementById('saved-chips');
-  if (!myEvaluations.length) {
-    chipsEl.innerHTML='';
-    document.getElementById('compare-area').innerHTML='<div class="empty-state">暂无已保存的评价<br>在「评价」页填写后点保存</div>';
+// ═══════════════ 对比渲染 ═══════════════
+function renderCompare() {
+  // 合并云端+本地数据
+  let evals = [...allEvaluations];
+  try {
+    const local = JSON.parse(localStorage.getItem('local_evals')||'[]');
+    evals = [...evals, ...local];
+  } catch(e){}
+
+  document.getElementById('saved-count').textContent = evals.length + ' 条';
+  document.getElementById('saved-toolbar').style.display = evals.length>0?'flex':'none';
+
+  if (!evals.length) {
+    document.getElementById('compare-area').innerHTML='<div class="empty-state">暂无已保存的评价<br>在上方填写后点保存</div>';
     return;
   }
-  chipsEl.innerHTML = myEvaluations.map(s => `<span class="supplier-chip">${s.supplier_name}（${s.total}分·${GRADE_CONFIG[s.grade].name}）<span class="chip-del" onclick="deleteEval('${s.id}')">✕</span></span>`).join('');
 
-  const sorted = [...myEvaluations].sort((a,b) => b.total-a.total);
+  const sorted = [...evals].sort((a,b) => b.total-a.total);
   let html = '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th style="text-align:left;">维度</th>';
   sorted.forEach((s,rank) => {
     const rc = rank===0?'rank-1':rank===1?'rank-2':rank===2?'rank-3':'rank-other';
-    html += `<th><span class="rank-badge ${rc}">${rank+1}</span>${s.supplier_name}</th>`;
+    html += `<th><span class="rank-badge ${rc}">${rank+1}</span>${s.supplier_name}<br><span style="font-size:10px;opacity:0.6;">${s.reviewer_name}</span></th>`;
   });
   html += '</tr></thead><tbody>';
 
@@ -708,89 +563,70 @@ function renderCompare() {
     });
     html += '</tr>';
   });
-  // 减分
   if (sorted.some(s=>s.deduct>0)) {
     html += '<tr class="dim-row"><td>减分项</td>';
     sorted.forEach(s => { html += `<td style="color:${s.deduct>0?'var(--red)':'#999'}">${s.deduct>0?'-'+s.deduct:'0'}</td>`; });
     html += '</tr>';
   }
-  // 总分
   html += '<tr class="total-row"><td>总分</td>';
-  sorted.forEach(s => { html += `<td class="${GRADE_CONFIG[s.grade].cls}" style="font-size:16px;">${s.total}</td>`; });
+  sorted.forEach(s => { html += `<td class="${GRADE_CONFIG[s.grade]?.cls||'grade-d'}" style="font-size:16px;">${s.total}</td>`; });
   html += '</tr>';
-  // 等级
   html += '<tr class="grade-row"><td>等级</td>';
-  sorted.forEach(s => { html += `<td><span class="result-grade-badge ${GRADE_CONFIG[s.grade].cls}" style="font-size:12px;padding:3px 14px;">${GRADE_CONFIG[s.grade].name}</span></td>`; });
+  sorted.forEach(s => { html += `<td><span class="result-grade-badge ${GRADE_CONFIG[s.grade]?.cls||'grade-d'}" style="font-size:12px;padding:3px 14px;">${GRADE_CONFIG[s.grade]?.name||s.grade}</span></td>`; });
   html += '</tr></tbody></table></div>';
   document.getElementById('compare-area').innerHTML = html;
 }
 
-// ═══════════════ 管理员汇总渲染 ═══════════════
+// ═══════════════ 管理员渲染 ═══════════════
 function renderAdmin() {
-  document.getElementById('admin-count').textContent = allEvaluations.length + ' 条';
-  if (!allEvaluations.length) {
-    document.getElementById('admin-area').innerHTML = '<div class="empty-state">暂无评价数据</div>';
-    return;
-  }
+  let evals = [...allEvaluations];
+  try { const local = JSON.parse(localStorage.getItem('local_evals')||'[]'); evals = [...evals,...local]; } catch(e){}
 
-  // 按供应商聚合
+  if (!evals.length) { document.getElementById('admin-area').innerHTML='<div class="empty-state">暂无数据</div>'; return; }
+
   const supplierMap = {};
-  allEvaluations.forEach(e => {
-    const key = e.supplier_name;
-    if (!supplierMap[key]) supplierMap[key] = [];
-    supplierMap[key].push(e);
-  });
+  evals.forEach(e => { if (!supplierMap[e.supplier_name]) supplierMap[e.supplier_name]=[]; supplierMap[e.supplier_name].push(e); });
 
-  let html = '';
-  // 按供应商均分排序
-  const supplierEntries = Object.entries(supplierMap).sort((a,b) => {
+  const entries = Object.entries(supplierMap).sort((a,b) => {
     const avgA = a[1].reduce((s,e)=>s+e.total,0)/a[1].length;
     const avgB = b[1].reduce((s,e)=>s+e.total,0)/b[1].length;
     return avgB-avgA;
   });
 
-  supplierEntries.forEach(([name, evals], idx) => {
-    const avg = Math.round(evals.reduce((s,e)=>s+e.total,0)/evals.length);
-    const avgGrade = calcResult({d1:{score:Math.round(evals.reduce((s,e)=>s+e.d1_score,0)/evals.length),anchorPass:true},d2:{score:Math.round(evals.reduce((s,e)=>s+e.d2_score,0)/evals.length),anchorPass:true},d3:{score:Math.round(evals.reduce((s,e)=>s+e.d3_score,0)/evals.length),anchorPass:true},d4:{score:Math.round(evals.reduce((s,e)=>s+e.d4_score,0)/evals.length),anchorPass:true},d5:{score:Math.round(evals.reduce((s,e)=>s+e.d5_score,0)/evals.length),anchorPass:true}},0).gradeKey;
+  let html = '<div class="saved-toolbar"><button class="btn btn-export btn-sm" onclick="exportAdminTable()">📋 复制汇总表格</button></div>';
+  entries.forEach(([name, evals2], idx) => {
+    const avg = Math.round(evals2.reduce((s,e)=>s+e.total,0)/evals2.length);
     const rc = idx===0?'rank-1':idx===1?'rank-2':idx===2?'rank-3':'rank-other';
-
-    html += `<div style="margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <span class="rank-badge ${rc}">${idx+1}</span>
-        <strong style="font-size:15px;color:var(--navy);">${name}</strong>
-        <span class="result-grade-badge ${GRADE_CONFIG[avgGrade].cls}" style="font-size:12px;padding:2px 12px;">均分 ${avg} · ${GRADE_CONFIG[avgGrade].name}</span>
-        <span style="font-size:12px;color:#999;">${evals.length}人评价</span>
-      </div>
-      <table class="compare-table">
-        <thead><tr><th>评审人</th><th>设计(20)</th><th>选品(25)</th><th>品控(25)</th><th>交付(20)</th><th>服务(10)</th><th>减分</th><th>总分</th><th>等级</th><th></th></tr></thead><tbody>`;
-    evals.forEach(e => {
-      const reviewer = e.profiles?.display_name || '未知';
-      html += `<tr>
-        <td style="font-weight:600;">${reviewer}</td>
-        <td>${e.d1_anchor===false?'0⚠️':e.d1_score}</td>
-        <td>${e.d2_anchor===false?'0⚠️':e.d2_score}</td>
-        <td>${e.d3_anchor===false?'0⚠️':e.d3_score}</td>
-        <td>${e.d4_anchor===false?'0⚠️':e.d4_score}</td>
+    const avgGrade = calcResult({d1:{score:Math.round(evals2.reduce((s,e)=>s+e.d1_score,0)/evals2.length),anchorPass:true},d2:{score:Math.round(evals2.reduce((s,e)=>s+e.d2_score,0)/evals2.length),anchorPass:true},d3:{score:Math.round(evals2.reduce((s,e)=>s+e.d3_score,0)/evals2.length),anchorPass:true},d4:{score:Math.round(evals2.reduce((s,e)=>s+e.d4_score,0)/evals2.length),anchorPass:true},d5:{score:Math.round(evals2.reduce((s,e)=>s+e.d5_score,0)/evals2.length),anchorPass:true}},0).gradeKey;
+    html += `<div style="margin-bottom:16px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="rank-badge ${rc}">${idx+1}</span>
+      <strong style="font-size:15px;color:var(--navy);">${name}</strong>
+      <span class="result-grade-badge ${GRADE_CONFIG[avgGrade].cls}" style="font-size:12px;padding:2px 12px;">均分 ${avg} · ${GRADE_CONFIG[avgGrade].name}</span>
+      <span style="font-size:12px;color:#999;">${evals2.length}人评价</span></div>
+      <table class="compare-table"><thead><tr><th>评审人</th><th>设计(20)</th><th>选品(25)</th><th>品控(25)</th><th>交付(20)</th><th>服务(10)</th><th>减分</th><th>总分</th><th>等级</th><th></th></tr></thead><tbody>`;
+    evals2.forEach(e => {
+      html += `<tr><td style="font-weight:600;">${e.reviewer_name}</td>
+        <td>${e.d1_anchor===false?'0⚠️':e.d1_score}</td><td>${e.d2_anchor===false?'0⚠️':e.d2_score}</td>
+        <td>${e.d3_anchor===false?'0⚠️':e.d3_score}</td><td>${e.d4_anchor===false?'0⚠️':e.d4_score}</td>
         <td>${e.d5_anchor===false?'0⚠️':e.d5_score}</td>
         <td style="color:${e.deduct>0?'var(--red)':'#999'}">${e.deduct>0?'-'+e.deduct:'0'}</td>
         <td style="font-weight:700;font-size:14px;">${e.total}</td>
-        <td><span class="result-grade-badge ${GRADE_CONFIG[e.grade].cls}" style="font-size:11px;padding:2px 10px;">${GRADE_CONFIG[e.grade].name}</span></td>
-        <td><button class="btn btn-danger" onclick="deleteEval('${e.id}')">删除</button></td>
-      </tr>`;
+        <td><span class="result-grade-badge ${GRADE_CONFIG[e.grade]?.cls||'grade-d'}" style="font-size:11px;padding:2px 10px;">${GRADE_CONFIG[e.grade]?.name||e.grade}</span></td>
+        <td>${e.id ? `<button class="btn btn-danger" onclick="deleteEval('${e.id}')">删除</button>` : ''}</td></tr>`;
     });
     html += '</tbody></table></div>';
   });
-
   document.getElementById('admin-area').innerHTML = html;
 }
 
 // ═══════════════ 导出 ═══════════════
 function exportTable() {
-  if (!myEvaluations.length) return;
-  const sorted = [...myEvaluations].sort((a,b)=>b.total-a.total);
+  let evals = [...allEvaluations];
+  try { const local = JSON.parse(localStorage.getItem('local_evals')||'[]'); evals = [...evals,...local]; } catch(e){}
+  if (!evals.length) return;
+  const sorted = [...evals].sort((a,b)=>b.total-a.total);
   let text = '福利定制供应商评价对比\n\n';
-  const headers = ['评价维度', ...sorted.map((s,i)=>`#${i+1} ${s.supplier_name}`)];
-  text += headers.join('\t')+'\n';
+  text += ['评价维度',...sorted.map((s,i)=>`#${i+1} ${s.supplier_name}(${s.reviewer_name})`)].join('\t')+'\n';
   ['d1','d2','d3','d4','d5'].forEach(did => {
     const dim = DIMS.find(d=>d.id===did);
     const row = [`${dim.name}（${dim.weight}）`];
@@ -798,18 +634,16 @@ function exportTable() {
     text += row.join('\t')+'\n';
   });
   text += ['总分',...sorted.map(s=>String(s.total))].join('\t')+'\n';
-  text += ['等级',...sorted.map(s=>GRADE_CONFIG[s.grade].name)].join('\t')+'\n';
-  navigator.clipboard.writeText(text).then(()=>alert('✅ 已复制到剪贴板')).catch(()=>{ /* fallback */ alert('复制失败，请手动复制'); });
+  text += ['等级',...sorted.map(s=>GRADE_CONFIG[s.grade]?.name||s.grade)].join('\t')+'\n';
+  navigator.clipboard.writeText(text).then(()=>alert('✅ 已复制到剪贴板')).catch(()=>alert('复制失败'));
 }
 
 function exportAdminTable() {
-  if (!allEvaluations.length) return;
-  let text = '供应商评价汇总（管理员视图）\n\n';
+  let evals = [...allEvaluations];
+  try { const local = JSON.parse(localStorage.getItem('local_evals')||'[]'); evals = [...evals,...local]; } catch(e){}
+  let text = '供应商评价汇总\n\n';
   text += ['供应商','评审人','设计','选品','品控','交付','服务','减分','总分','等级'].join('\t')+'\n';
-  allEvaluations.forEach(e => {
-    const r = e.profiles?.display_name || '未知';
-    text += [e.supplier_name, r, e.d1_score, e.d2_score, e.d3_score, e.d4_score, e.d5_score, e.deduct, e.total, GRADE_CONFIG[e.grade].name].join('\t')+'\n';
-  });
+  evals.forEach(e => { text += [e.supplier_name,e.reviewer_name,e.d1_score,e.d2_score,e.d3_score,e.d4_score,e.d5_score,e.deduct,e.total,GRADE_CONFIG[e.grade]?.name||e.grade].join('\t')+'\n'; });
   navigator.clipboard.writeText(text).then(()=>alert('✅ 已复制到剪贴板')).catch(()=>alert('复制失败'));
 }
 
@@ -847,6 +681,15 @@ buildDimCards();
 buildBottomlines();
 toggleCard('d1');
 recalc();
+
+// 恢复上次输入的名字
+const savedName = localStorage.getItem('reviewer_name') || '';
+document.getElementById('reviewer-name').value = savedName;
+document.getElementById('reviewer-name').addEventListener('input', function() {
+  localStorage.setItem('reviewer_name', this.value);
+});
+
+initSupabase();
 </script>
 </body>
 </html>
