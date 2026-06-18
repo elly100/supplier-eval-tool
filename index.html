@@ -217,6 +217,17 @@
   .compare-card-row .ccr-score-tag { background:#F0F2F5; padding:1px 6px; border-radius:4px; white-space:nowrap; }
   .compare-card-row .ccr-total { font-size:13px; font-weight:700; color:var(--navy); min-width:50px; }
   .compare-card-row .ccr-grade { font-size:10px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+  .compare-card-row { cursor:pointer; }
+  .compare-card-row:hover { background:#f0f4ff; }
+  .compare-card-row .ccr-arrow { font-size:10px; color:#bbb; margin-left:4px; transition:transform 0.15s; }
+  .compare-card-row.expanded .ccr-arrow { transform:rotate(90deg); }
+  .compare-card-detail { display:none; padding:8px 18px 12px; background:#FAFBFD; border-bottom:1px solid #f0f2f5; }
+  .compare-card-detail.open { display:block; }
+  .compare-card-detail .ccd-label { font-size:11px; font-weight:600; color:var(--navy); margin-bottom:2px; margin-top:6px; }
+  .compare-card-detail .ccd-text { font-size:12px; color:#555; line-height:1.6; }
+  .compare-card-detail .ccd-text.ccd-pros { color:#2E7D32; }
+  .compare-card-detail .ccd-text.ccd-cons { color:#C62828; }
+  .compare-card-detail .ccd-date { font-size:10px; color:#aaa; margin-top:6px; }
 
   .tab-bar { display:flex; gap:0; margin-bottom:20px; }
   .tab-btn { padding:10px 24px; border:1.5px solid var(--border); background:var(--white); font-size:14px; font-weight:600; color:var(--body); cursor:pointer; transition:all 0.15s; }
@@ -936,9 +947,7 @@ function renderCompareBySupplier(evals) {
     const gc = GRADE_CONFIG[avgGrade];
     html += `<div class="compare-card"><div class="compare-card-header"><span class="cc-rank">${idx+1}</span><span class="cc-name">${escHtml(name)}</span><span class="cc-badge">均分 ${avg} · ${gc?.name||avgGrade}</span><span class="cc-count">${evs.length}人评价</span></div><div class="compare-card-body">`;
     evs.sort((a,b)=>b.total-a.total).forEach(e => {
-      const gCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
-      const gName = GRADE_CONFIG[e.grade]?.name||e.grade;
-      html += `<div class="compare-card-row"><span class="ccr-name">${escHtml(e.reviewer_name)}</span><span class="ccr-scores"><span class="ccr-score-tag">设计${e.d1_anchor===false?'0⚠️':e.d1_score}/20</span><span class="ccr-score-tag">选品${e.d2_anchor===false?'0⚠️':e.d2_score}/25</span><span class="ccr-score-tag">品控${e.d3_anchor===false?'0⚠️':e.d3_score}/25</span><span class="ccr-score-tag">交付${e.d4_anchor===false?'0⚠️':e.d4_score}/20</span><span class="ccr-score-tag">服务${e.d5_anchor===false?'0⚠️':e.d5_score}/10</span>${e.deduct>0?`<span class="ccr-score-tag" style="color:var(--red);">减${e.deduct}</span>`:''}</span><span class="ccr-total">${e.total}分</span><span class="ccr-grade result-grade-badge ${gCls}">${gName}</span></div>`;
+      html += renderEvalRow(e, 'reviewer');
     });
     html += '</div></div>';
   });
@@ -954,13 +963,36 @@ function renderCompareByReviewer(evals) {
   entries.forEach(([name, evs], idx) => {
     html += `<div class="compare-card"><div class="compare-card-header"><span class="cc-rank">${idx+1}</span><span class="cc-name">${escHtml(name)}</span><span class="cc-count">${evs.length}个供应商</span></div><div class="compare-card-body">`;
     evs.sort((a,b)=>b.total-a.total).forEach(e => {
-      const gCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
-      const gName = GRADE_CONFIG[e.grade]?.name||e.grade;
-      html += `<div class="compare-card-row"><span class="ccr-name">${escHtml(e.supplier_name)}</span><span class="ccr-scores"><span class="ccr-score-tag">设计${e.d1_anchor===false?'0⚠️':e.d1_score}/20</span><span class="ccr-score-tag">选品${e.d2_anchor===false?'0⚠️':e.d2_score}/25</span><span class="ccr-score-tag">品控${e.d3_anchor===false?'0⚠️':e.d3_score}/25</span><span class="ccr-score-tag">交付${e.d4_anchor===false?'0⚠️':e.d4_score}/20</span><span class="ccr-score-tag">服务${e.d5_anchor===false?'0⚠️':e.d5_score}/10</span>${e.deduct>0?`<span class="ccr-score-tag" style="color:var(--red);">减${e.deduct}</span>`:''}</span><span class="ccr-total">${e.total}分</span><span class="ccr-grade result-grade-badge ${gCls}">${gName}</span></div>`;
+      html += renderEvalRow(e, 'supplier');
     });
     html += '</div></div>';
   });
   return html;
+}
+
+function renderEvalRow(e, labelBy) {
+  const gCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
+  const gName = GRADE_CONFIG[e.grade]?.name||e.grade;
+  const label = labelBy==='reviewer' ? escHtml(e.reviewer_name) : escHtml(e.supplier_name);
+  const rid = e.id || Math.random().toString(36).slice(2,8);
+  const dateStr = e.created_at ? new Date(e.created_at).toLocaleDateString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'}) : '';
+  let row = `<div class="compare-card-row" onclick="toggleEvalDetail('${rid}',this)"><span class="ccr-name">${label}</span><span class="ccr-scores"><span class="ccr-score-tag">设计${e.d1_anchor===false?'0⚠️':e.d1_score}/20</span><span class="ccr-score-tag">选品${e.d2_anchor===false?'0⚠️':e.d2_score}/25</span><span class="ccr-score-tag">品控${e.d3_anchor===false?'0⚠️':e.d3_score}/25</span><span class="ccr-score-tag">交付${e.d4_anchor===false?'0⚠️':e.d4_score}/20</span><span class="ccr-score-tag">服务${e.d5_anchor===false?'0⚠️':e.d5_score}/10</span>${e.deduct>0?`<span class="ccr-score-tag" style="color:var(--red);">减${e.deduct}</span>`:''}</span><span class="ccr-total">${e.total}分</span><span class="ccr-grade result-grade-badge ${gCls}">${gName}</span><span class="ccr-arrow">▶</span></div>`;
+  row += `<div class="compare-card-detail" id="detail-${rid}">`;
+  if (e.pros) row += `<div class="ccd-label">👍 优点</div><div class="ccd-text ccd-pros">${escHtml(e.pros)}</div>`;
+  if (e.cons) row += `<div class="ccd-label">👎 不足</div><div class="ccd-text ccd-cons">${escHtml(e.cons)}</div>`;
+  if (!e.pros && !e.cons) row += `<div class="ccd-text" style="color:#aaa;">暂无补充评价</div>`;
+  if (dateStr) row += `<div class="ccd-date">评价时间：${dateStr}</div>`;
+  row += '</div>';
+  return row;
+}
+
+function toggleEvalDetail(rid, rowEl) {
+  const detail = document.getElementById('detail-' + rid);
+  if (!detail) return;
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open');
+  rowEl.classList.toggle('expanded');
+  rowEl.querySelector('.ccr-arrow').style.transform = isOpen ? '' : 'rotate(90deg)';
 }
 
 // ═══════════════ 管理员渲染 ═══════════════
