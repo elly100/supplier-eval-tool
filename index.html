@@ -188,7 +188,7 @@
   <!-- 评审人 + 供应商名 -->
   <div class="supplier-section">
     <label>你的名字</label>
-    <input type="text" id="reviewer-name" placeholder="输入你的名字…" style="width:140px;">
+    <input type="text" id="reviewer-name" placeholder="输入你的名字…" style="width:140px;" oninput="renderCompare()">
     <label>供应商名称</label>
     <input type="text" id="supplier-name" placeholder="输入供应商名称…">
     <button class="btn btn-success" onclick="saveCurrent()">💾 保存</button>
@@ -591,18 +591,33 @@ function checkAdmin() {
 
 // ═══════════════ 对比渲染 ═══════════════
 function renderCompare() {
-  // 合并云端+本地数据
+  // 普通用户只看自己的数据
+  const currentReviewer = document.getElementById('reviewer-name').value.trim();
   let evals = [...allEvaluations];
   try {
     const local = JSON.parse(localStorage.getItem('local_evals')||'[]');
     evals = [...evals, ...local];
   } catch(e){}
 
+  // 按当前评审人过滤
+  if (currentReviewer) {
+    evals = evals.filter(e => e.reviewer_name === currentReviewer);
+  }
+
   document.getElementById('saved-count').textContent = evals.length + ' 条';
   document.getElementById('saved-toolbar').style.display = evals.length>0?'flex':'none';
 
+  if (!currentReviewer) {
+    document.getElementById('compare-area').innerHTML='<div class="empty-state">请先输入你的名字，即可查看你的评价记录</div>';
+    document.getElementById('saved-count').textContent = '0 条';
+    document.getElementById('saved-toolbar').style.display = 'none';
+    return;
+  }
+
   if (!evals.length) {
-    document.getElementById('compare-area').innerHTML='<div class="empty-state">暂无已保存的评价<br>在上方填写后点保存</div>';
+    document.getElementById('compare-area').innerHTML='<div class="empty-state">你还没有保存过评价<br>在上方填写后点保存</div>';
+    document.getElementById('saved-count').textContent = '0 条';
+    document.getElementById('saved-toolbar').style.display = 'none';
     return;
   }
 
@@ -610,7 +625,7 @@ function renderCompare() {
   let html = '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th style="text-align:left;">维度</th>';
   sorted.forEach((s,rank) => {
     const rc = rank===0?'rank-1':rank===1?'rank-2':rank===2?'rank-3':'rank-other';
-    html += `<th><span class="rank-badge ${rc}">${rank+1}</span>${s.supplier_name}<br><span style="font-size:10px;opacity:0.6;">${s.reviewer_name}</span></th>`;
+    html += `<th><span class="rank-badge ${rc}">${rank+1}</span>${s.supplier_name}</th>`;
   });
   html += '</tr></thead><tbody>';
 
@@ -684,8 +699,10 @@ function renderAdmin() {
 
 // ═══════════════ 导出 ═══════════════
 function exportTable() {
+  const currentReviewer = document.getElementById('reviewer-name').value.trim();
   let evals = [...allEvaluations];
   try { const local = JSON.parse(localStorage.getItem('local_evals')||'[]'); evals = [...evals,...local]; } catch(e){}
+  if (currentReviewer) evals = evals.filter(e => e.reviewer_name === currentReviewer);
   if (!evals.length) return;
   const sorted = [...evals].sort((a,b)=>b.total-a.total);
   let text = '福利定制供应商评价对比\n\n';
