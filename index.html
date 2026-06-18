@@ -278,6 +278,23 @@
   .timeline-scores { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
   .timeline-score-tag { font-size:11px; padding:2px 8px; border-radius:4px; background:#F5F5F5; }
   .timeline-feedback { font-size:12px; margin-top:4px; }
+
+  /* 附件区域 */
+  .attachment-section { margin-top:20px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; }
+  .attachment-title { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+  .attachment-upload { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .attachment-upload input[type="file"] { display:none; }
+  .attachment-upload .btn { position:relative; overflow:hidden; }
+  .attachment-upload .file-name { font-size:12px; color:#666; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .attachment-list { display:flex; flex-direction:column; gap:8px; }
+  .attachment-item { display:flex; align-items:center; gap:10px; padding:8px 12px; background:#F8F9FB; border-radius:8px; border:1px solid #EEF0F4; }
+  .attachment-item .ai-icon { font-size:20px; flex-shrink:0; }
+  .attachment-item .ai-info { flex:1; min-width:0; }
+  .attachment-item .ai-name { font-size:12px; font-weight:600; color:var(--navy); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .attachment-item .ai-meta { font-size:10px; color:#999; }
+  .attachment-item .ai-actions { display:flex; gap:4px; flex-shrink:0; }
+  .attachment-empty { font-size:12px; color:#aaa; text-align:center; padding:16px; }
+  .upload-progress { font-size:11px; color:var(--med-blue); }
 </style>
 </head>
 <body>
@@ -1209,7 +1226,134 @@ function renderArchiveDetail(name) {
     </div>`;
   });
   html += '</div>';
+
+  // 附件区域
+  html += `<div class="attachment-section">
+    <div class="attachment-title">📎 附件资料</div>
+    <div class="attachment-upload">
+      <input type="file" id="attachment-file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.webp" onchange="onFileSelected(this,'${escHtml(name)}')">
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('attachment-file').click()">📎 上传附件</button>
+      <span class="file-name" id="attachment-file-name"></span>
+    </div>
+    <div id="upload-progress-area"></div>
+    <div class="attachment-list" id="attachment-list">
+      <div class="attachment-empty">加载中...</div>
+    </div>
+  </div>`;
+
   container.innerHTML = html;
+  loadAttachments(name);
+}
+
+// ═══════════════ 附件管理（Supabase Storage） ═══════════════
+const STORAGE_BUCKET = 'supplier-files';
+
+function getFileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  if (['jpg','jpeg','png','gif','bmp','webp'].includes(ext)) return '🖼️';
+  if (['pdf'].includes(ext)) return '📄';
+  if (['doc','docx'].includes(ext)) return '📝';
+  if (['xls','xlsx'].includes(ext)) return '📊';
+  if (['ppt','pptx'].includes(ext)) return '📋';
+  return '📎';
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + 'KB';
+  return (bytes/1024/1024).toFixed(1) + 'MB';
+}
+
+function getSafeFolderName(name) {
+  return name.replace(/[^a-zA-Z0-9\u4e00-\u9fff._-]/g, '_');
+}
+
+async function loadAttachments(supplierName) {
+  const listEl = document.getElementById('attachment-list');
+  if (!listEl || !sb) {
+    if (listEl) listEl.innerHTML = '<div class="attachment-empty">未连接存储服务</div>';
+    return;
+  }
+  const folder = getSafeFolderName(supplierName) + '/';
+  const { data, error } = await sb.storage.from(STORAGE_BUCKET).list(folder, { limit: 50, sortBy: { column: 'created_at', order: 'desc' } });
+  if (error || !data || !data.length) {
+    listEl.innerHTML = '<div class="attachment-empty">暂无附件，点击上方按钮上传</div>';
+    return;
+  }
+  let html = '';
+  data.forEach(f => {
+    if (f.name === '.emptyFolderPlaceholder') return;
+    const filePath = folder + f.name;
+    const url = sb.storage.from(STORAGE_BUCKET).getPublicUrl(filePath).data.publicUrl;
+    html += `<div class="attachment-item">
+      <span class="ai-icon">${getFileIcon(f.name)}</span>
+      <div class="ai-info">
+        <div class="ai-name">${escHtml(f.name)}</div>
+        <div class="ai-meta">${formatFileSize(f.metadata?.size||0)} · ${new Date(f.created_at).toLocaleDateString('zh-CN')}</div>
+      </div>
+      <div class="ai-actions">
+        <a href="${url}" target="_blank" download class="btn btn-outline btn-sm" style="text-decoration:none;">⬇️</a>
+        <button class="btn btn-danger" style="padding:3px 8px;font-size:11px;" onclick="deleteAttachment('${escHtml(supplierName)}','${escHtml(f.name)}')">🗑️</button>
+      </div>
+    </div>`;
+  });
+  listEl.innerHTML = html || '<div class="attachment-empty">暂无附件</div>';
+}
+
+function onFileSelected(input, supplierName) {
+  const files = input.files;
+  if (!files || !files.length) return;
+  const nameEl = document.getElementById('attachment-file-name');
+  if (files.length === 1) nameEl.textContent = files[0].name;
+  else nameEl.textContent = files.length + ' 个文件';
+  uploadFiles(supplierName, files);
+}
+
+async function uploadFiles(supplierName, files) {
+  const progressArea = document.getElementById('upload-progress-area');
+  if (!sb) { alert('未连接存储服务，无法上传'); return; }
+  const folder = getSafeFolderName(supplierName) + '/';
+  let success = 0, fail = 0;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (file.size > 10 * 1024 * 1024) {
+      progressArea.innerHTML += `<div style="color:var(--red);font-size:12px;">❌ ${file.name} 超过10MB限制</div>`;
+      fail++;
+      continue;
+    }
+    progressArea.innerHTML += `<div class="upload-progress" id="upload-${i}">⏳ 上传中: ${file.name}</div>`;
+    const filePath = folder + file.name;
+    const { error } = await sb.storage.from(STORAGE_BUCKET).upload(filePath, file, { upsert: true });
+    const el = document.getElementById('upload-' + i);
+    if (error) {
+      if (el) el.innerHTML = `❌ ${file.name} 上传失败: ${error.message}`;
+      if (el) el.style.color = 'var(--red)';
+      fail++;
+    } else {
+      if (el) el.innerHTML = `✅ ${file.name} 上传成功`;
+      if (el) el.style.color = 'var(--green)';
+      success++;
+    }
+  }
+
+  if (success > 0) {
+    setTimeout(() => {
+      loadAttachments(supplierName);
+      progressArea.innerHTML = '';
+    }, 1000);
+  }
+  document.getElementById('attachment-file').value = '';
+  document.getElementById('attachment-file-name').textContent = '';
+}
+
+async function deleteAttachment(supplierName, fileName) {
+  if (!confirm(`确定要删除附件「${fileName}」吗？`)) return;
+  const folder = getSafeFolderName(supplierName) + '/';
+  const filePath = folder + fileName;
+  const { error } = await sb.storage.from(STORAGE_BUCKET).remove([filePath]);
+  if (error) { alert('删除失败：' + error.message); return; }
+  loadAttachments(supplierName);
 }
 
 // ═══════════════ 导出 ═══════════════
