@@ -52,23 +52,6 @@
   .supplier-history-hint .shh-text { color:#666; }
   .supplier-history-hint .shh-link { color:var(--med-blue); cursor:pointer; font-weight:600; text-decoration:underline; }
 
-  /* 对比区展开明细 */
-  .compare-supplier-col { cursor:pointer; position:relative; }
-  .compare-supplier-col:hover { opacity:0.85; }
-  .compare-supplier-col .cs-expand-hint { font-size:9px; color:#ccc; font-weight:400; }
-  .compare-detail-panel { display:none; margin-top:12px; }
-  .compare-detail-panel.open { display:block; }
-  .compare-detail-panel .cdp-title { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:10px; }
-  .cdp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; }
-  .cdp-card { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:14px 16px; }
-  .cdp-card h4 { font-size:13px; color:var(--navy); margin-bottom:8px; display:flex; align-items:center; gap:6px; }
-  .cdp-card h4 .cdp-count { font-size:11px; color:#888; font-weight:400; }
-  .cdp-person { display:flex; align-items:baseline; gap:8px; padding:5px 0; border-bottom:1px solid #f0f0f0; flex-wrap:wrap; }
-  .cdp-person:last-child { border-bottom:none; }
-  .cdp-person .cdp-name { font-weight:600; color:var(--navy); font-size:12px; min-width:50px; }
-  .cdp-person .cdp-scores { font-size:11px; color:#666; }
-  .cdp-person .cdp-grade { font-size:10px; padding:1px 8px; border-radius:10px; white-space:nowrap; }
-
   /* 管理员编辑弹窗 */
   .edit-modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.45); z-index:1000; display:flex; align-items:center; justify-content:center; }
   .edit-modal { background:var(--white); border-radius:var(--radius); padding:24px 28px; max-width:560px; width:90%; max-height:85vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.2); }
@@ -212,6 +195,28 @@
   .rank-3 { background:#CD7F32; color:#FFF; }
   .rank-other { background:#E0E0E0; color:#666; }
   .saved-toolbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+
+  /* 对比区 Tab */
+  .compare-tabs { display:flex; gap:0; margin-bottom:14px; border-bottom:2px solid var(--border); }
+  .compare-tab { padding:8px 20px; font-size:13px; font-weight:600; cursor:pointer; color:#888; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.15s; }
+  .compare-tab:hover { color:var(--navy); }
+  .compare-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+
+  /* 对比区卡片 */
+  .compare-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:14px; overflow:hidden; }
+  .compare-card-header { display:flex; align-items:center; gap:10px; padding:12px 18px; background:linear-gradient(135deg,var(--navy),#2a5090); color:var(--white); }
+  .compare-card-header .cc-rank { width:24px; height:24px; border-radius:6px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; }
+  .compare-card-header .cc-name { font-size:15px; font-weight:700; }
+  .compare-card-header .cc-badge { font-size:11px; padding:2px 10px; border-radius:20px; background:rgba(255,255,255,0.2); }
+  .compare-card-header .cc-count { font-size:11px; opacity:0.7; }
+  .compare-card-body { padding:0; }
+  .compare-card-row { display:flex; align-items:baseline; gap:10px; padding:8px 18px; border-bottom:1px solid #f0f2f5; flex-wrap:wrap; }
+  .compare-card-row:last-child { border-bottom:none; }
+  .compare-card-row .ccr-name { font-size:12px; font-weight:600; color:var(--navy); min-width:56px; }
+  .compare-card-row .ccr-scores { font-size:11px; color:#555; display:flex; gap:4px; flex-wrap:wrap; }
+  .compare-card-row .ccr-score-tag { background:#F0F2F5; padding:1px 6px; border-radius:4px; white-space:nowrap; }
+  .compare-card-row .ccr-total { font-size:13px; font-weight:700; color:var(--navy); min-width:50px; }
+  .compare-card-row .ccr-grade { font-size:10px; padding:2px 8px; border-radius:10px; white-space:nowrap; }
 
   .tab-bar { display:flex; gap:0; margin-bottom:20px; }
   .tab-btn { padding:10px 24px; border:1.5px solid var(--border); background:var(--white); font-size:14px; font-weight:600; color:var(--body); cursor:pointer; transition:all 0.15s; }
@@ -883,6 +888,8 @@ function checkAdmin() {
 }
 
 // ═══════════════ 对比渲染 ═══════════════
+let compareViewMode = 'supplier';
+
 function renderCompare() {
   let evals = [...allEvaluations].filter(e => (e.category||'福利礼品定制') === currentCategory);
   try {
@@ -900,107 +907,60 @@ function renderCompare() {
     return;
   }
 
-  // 按供应商分组
-  const supplierMap = {};
-  evals.forEach(e => {
-    if (!supplierMap[e.supplier_name]) supplierMap[e.supplier_name] = [];
-    supplierMap[e.supplier_name].push(e);
-  });
+  let html = `<div class="compare-tabs">
+    <div class="compare-tab ${compareViewMode==='supplier'?'active':''}" onclick="compareViewMode='supplier';renderCompare();">📦 按供应商</div>
+    <div class="compare-tab ${compareViewMode==='reviewer'?'active':''}" onclick="compareViewMode='reviewer';renderCompare();">👤 按评价人</div>
+  </div>`;
 
-  // 计算每个供应商的均分，按均分排序
-  const suppliers = Object.entries(supplierMap).map(([name, evs]) => {
-    const avgD1 = Math.round(evs.reduce((s,e)=>s+(e.d1_anchor===false?0:e.d1_score),0)/evs.length);
-    const avgD2 = Math.round(evs.reduce((s,e)=>s+(e.d2_anchor===false?0:e.d2_score),0)/evs.length);
-    const avgD3 = Math.round(evs.reduce((s,e)=>s+(e.d3_anchor===false?0:e.d3_score),0)/evs.length);
-    const avgD4 = Math.round(evs.reduce((s,e)=>s+(e.d4_anchor===false?0:e.d4_score),0)/evs.length);
-    const avgD5 = Math.round(evs.reduce((s,e)=>s+(e.d5_anchor===false?0:e.d5_score),0)/evs.length);
-    const avgDeduct = Math.round(evs.reduce((s,e)=>s+(e.deduct||0),0)/evs.length);
-    const avgTotal = avgD1+avgD2+avgD3+avgD4+avgD5-avgDeduct;
-    const avgGrade = calcResult({d1:{score:avgD1,anchorPass:true},d2:{score:avgD2,anchorPass:true},d3:{score:avgD3,anchorPass:true},d4:{score:avgD4,anchorPass:true},d5:{score:avgD5,anchorPass:true}},avgDeduct).gradeKey;
-    return { name, evals:evs, avgD1,avgD2,avgD3,avgD4,avgD5,avgDeduct,avgTotal,avgGrade };
-  }).sort((a,b) => b.avgTotal - a.avgTotal);
-
-  const cm = {'卓越':'var(--green)','优秀':'var(--med-blue)','良好':'var(--gold)','合格':'#E65100','不合格':'var(--red)'};
-
-  let html = '<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th style="text-align:left;">维度</th>';
-  suppliers.forEach((s,rank) => {
-    const rc = rank===0?'rank-1':rank===1?'rank-2':rank===2?'rank-3':'rank-other';
-    html += `<th class="compare-supplier-col" onclick="toggleCompareDetail()"><span class="rank-badge ${rc}">${rank+1}</span>${s.name}<br><span style="font-size:10px;font-weight:400;opacity:.6;">${s.evals.length}人评价</span><br><span class="cs-expand-hint">▾ 点击展开</span></th>`;
-  });
-  html += '</tr></thead><tbody>';
-
-  // 各维度均分行
-  ['d1','d2','d3','d4','d5'].forEach(did => {
-    const dim = DIMS.find(d=>d.id===did);
-    html += `<tr class="dim-row"><td>${dim.name}（${dim.weight}）</td>`;
-    suppliers.forEach(s => {
-      const avgKey = 'avgD'+did.replace('d','');
-      const avg = s[avgKey];
-      const hit = dim.ranges.find(r=>avg>=r.min&&avg<=r.max);
-      const gn = hit?hit.name:'-';
-      html += `<td style="color:${cm[gn]||'#999'};font-weight:600;">${avg}<span style="font-weight:400;font-size:10px;opacity:.5;">/${dim.weight}</span><br><span style="font-size:10px;">${gn}</span></td>`;
-    });
-    html += '</tr>';
-  });
-
-  // 减分均分
-  if (suppliers.some(s=>s.avgDeduct>0)) {
-    html += '<tr class="dim-row"><td>减分项</td>';
-    suppliers.forEach(s => { html += `<td style="color:${s.avgDeduct>0?'var(--red)':'#999'}">${s.avgDeduct>0?'-'+s.avgDeduct:'0'}</td>`; });
-    html += '</tr>';
+  if (compareViewMode === 'supplier') {
+    html += renderCompareBySupplier(evals);
+  } else {
+    html += renderCompareByReviewer(evals);
   }
-
-  // 总分均分
-  html += '<tr class="total-row"><td>均分</td>';
-  suppliers.forEach(s => { html += `<td class="${GRADE_CONFIG[s.avgGrade]?.cls||'grade-d'}" style="font-size:16px;">${s.avgTotal}</td>`; });
-  html += '</tr>';
-
-  // 等级行
-  html += '<tr class="grade-row"><td>等级</td>';
-  suppliers.forEach(s => { html += `<td><span class="result-grade-badge ${GRADE_CONFIG[s.avgGrade]?.cls||'grade-d'}" style="font-size:12px;padding:3px 14px;">${GRADE_CONFIG[s.avgGrade]?.name||s.avgGrade}</span></td>`; });
-  html += '</tr>';
-
-  // 优缺点汇总（合并所有人的）
-  html += '<tr class="feedback-row"><td>优点</td>';
-  suppliers.forEach(s => {
-    const allPros = s.evals.filter(e=>e.pros).map(e=>`<span style="color:var(--navy);font-weight:500;">${e.reviewer_name}:</span> ${e.pros}`).join('；');
-    html += `<td><div class="cell-pros">${allPros||'—'}</div></td>`;
-  });
-  html += '</tr><tr class="feedback-row"><td>不足</td>';
-  suppliers.forEach(s => {
-    const allCons = s.evals.filter(e=>e.cons).map(e=>`<span style="color:var(--navy);font-weight:500;">${e.reviewer_name}:</span> ${e.cons}`).join('；');
-    html += `<td><div class="cell-cons">${allCons||'—'}</div></td>`;
-  });
-  html += '</tr>';
-
-  html += '</tbody></table></div>';
-
-  // 展开明细面板（表格下方，卡片式布局）
-  html += '<div class="compare-detail-panel" id="compare-detail">';
-  html += '<div class="cdp-title">👤 各人评分明细</div><div class="cdp-grid">';
-  suppliers.forEach(s => {
-    html += `<div class="cdp-card"><h4>${s.name} <span class="cdp-count">${s.evals.length}人评价</span></h4>`;
-    s.evals.sort((a,b)=>b.total-a.total).forEach(e => {
-      const gradeCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
-      const gradeName = GRADE_CONFIG[e.grade]?.name||e.grade;
-      html += `<div class="cdp-person"><span class="cdp-name">${e.reviewer_name}</span>
-        <span class="cdp-scores">设计${e.d1_anchor===false?'0⚠️':e.d1_score} 选品${e.d2_anchor===false?'0⚠️':e.d2_score} 品控${e.d3_anchor===false?'0⚠️':e.d3_score} 交付${e.d4_anchor===false?'0⚠️':e.d4_score} 服务${e.d5_anchor===false?'0⚠️':e.d5_score}${e.deduct>0?' 减'+e.deduct:''}</span>
-        <span class="cdp-grade result-grade-badge ${gradeCls}">${e.total}分·${gradeName}</span></div>`;
-    });
-    html += '</div>';
-  });
-  html += '</div></div>';
-
   document.getElementById('compare-area').innerHTML = html;
 }
 
-function toggleCompareDetail() {
-  const panel = document.getElementById('compare-detail');
-  if (!panel) return;
-  panel.classList.toggle('open');
-  document.querySelectorAll('.cs-expand-hint').forEach(el => {
-    el.textContent = panel.classList.contains('open') ? '▴ 点击收起' : '▾ 点击展开';
+function renderCompareBySupplier(evals) {
+  const map = {};
+  evals.forEach(e => { if (!map[e.supplier_name]) map[e.supplier_name]=[]; map[e.supplier_name].push(e); });
+  const entries = Object.entries(map).sort((a,b) => {
+    const avgA = a[1].reduce((s,e)=>s+e.total,0)/a[1].length;
+    const avgB = b[1].reduce((s,e)=>s+e.total,0)/b[1].length;
+    return avgB-avgA;
   });
+
+  let html = '';
+  entries.forEach(([name, evs], idx) => {
+    const avg = Math.round(evs.reduce((s,e)=>s+e.total,0)/evs.length);
+    const avgGrade = calcResult({d1:{score:Math.round(evs.reduce((s,e)=>s+(e.d1_anchor===false?0:e.d1_score),0)/evs.length),anchorPass:true},d2:{score:Math.round(evs.reduce((s,e)=>s+(e.d2_anchor===false?0:e.d2_score),0)/evs.length),anchorPass:true},d3:{score:Math.round(evs.reduce((s,e)=>s+(e.d3_anchor===false?0:e.d3_score),0)/evs.length),anchorPass:true},d4:{score:Math.round(evs.reduce((s,e)=>s+(e.d4_anchor===false?0:e.d4_score),0)/evs.length),anchorPass:true},d5:{score:Math.round(evs.reduce((s,e)=>s+(e.d5_anchor===false?0:e.d5_score),0)/evs.length),anchorPass:true}},Math.round(evs.reduce((s,e)=>s+(e.deduct||0),0)/evs.length)).gradeKey;
+    const gc = GRADE_CONFIG[avgGrade];
+    html += `<div class="compare-card"><div class="compare-card-header"><span class="cc-rank">${idx+1}</span><span class="cc-name">${escHtml(name)}</span><span class="cc-badge">均分 ${avg} · ${gc?.name||avgGrade}</span><span class="cc-count">${evs.length}人评价</span></div><div class="compare-card-body">`;
+    evs.sort((a,b)=>b.total-a.total).forEach(e => {
+      const gCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
+      const gName = GRADE_CONFIG[e.grade]?.name||e.grade;
+      html += `<div class="compare-card-row"><span class="ccr-name">${escHtml(e.reviewer_name)}</span><span class="ccr-scores"><span class="ccr-score-tag">设计${e.d1_anchor===false?'0⚠️':e.d1_score}/20</span><span class="ccr-score-tag">选品${e.d2_anchor===false?'0⚠️':e.d2_score}/25</span><span class="ccr-score-tag">品控${e.d3_anchor===false?'0⚠️':e.d3_score}/25</span><span class="ccr-score-tag">交付${e.d4_anchor===false?'0⚠️':e.d4_score}/20</span><span class="ccr-score-tag">服务${e.d5_anchor===false?'0⚠️':e.d5_score}/10</span>${e.deduct>0?`<span class="ccr-score-tag" style="color:var(--red);">减${e.deduct}</span>`:''}</span><span class="ccr-total">${e.total}分</span><span class="ccr-grade result-grade-badge ${gCls}">${gName}</span></div>`;
+    });
+    html += '</div></div>';
+  });
+  return html;
+}
+
+function renderCompareByReviewer(evals) {
+  const map = {};
+  evals.forEach(e => { if (!map[e.reviewer_name]) map[e.reviewer_name]=[]; map[e.reviewer_name].push(e); });
+  const entries = Object.entries(map).sort((a,b) => b[1].length - a[1].length);
+
+  let html = '';
+  entries.forEach(([name, evs], idx) => {
+    html += `<div class="compare-card"><div class="compare-card-header"><span class="cc-rank">${idx+1}</span><span class="cc-name">${escHtml(name)}</span><span class="cc-count">${evs.length}个供应商</span></div><div class="compare-card-body">`;
+    evs.sort((a,b)=>b.total-a.total).forEach(e => {
+      const gCls = GRADE_CONFIG[e.grade]?.cls||'grade-d';
+      const gName = GRADE_CONFIG[e.grade]?.name||e.grade;
+      html += `<div class="compare-card-row"><span class="ccr-name">${escHtml(e.supplier_name)}</span><span class="ccr-scores"><span class="ccr-score-tag">设计${e.d1_anchor===false?'0⚠️':e.d1_score}/20</span><span class="ccr-score-tag">选品${e.d2_anchor===false?'0⚠️':e.d2_score}/25</span><span class="ccr-score-tag">品控${e.d3_anchor===false?'0⚠️':e.d3_score}/25</span><span class="ccr-score-tag">交付${e.d4_anchor===false?'0⚠️':e.d4_score}/20</span><span class="ccr-score-tag">服务${e.d5_anchor===false?'0⚠️':e.d5_score}/10</span>${e.deduct>0?`<span class="ccr-score-tag" style="color:var(--red);">减${e.deduct}</span>`:''}</span><span class="ccr-total">${e.total}分</span><span class="ccr-grade result-grade-badge ${gCls}">${gName}</span></div>`;
+    });
+    html += '</div></div>';
+  });
+  return html;
 }
 
 // ═══════════════ 管理员渲染 ═══════════════
