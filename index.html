@@ -106,6 +106,8 @@
   .result-details { margin-top:16px; }
   .result-bar-row { display:flex; align-items:center; margin-bottom:8px; gap:10px; }
   .result-bar-label { width:110px; font-size:11px; font-weight:600; color:var(--navy); text-align:right; flex-shrink:0; }
+  .result-bar-track-wrap { flex:1; display:flex; align-items:center; gap:6px; }
+  .result-bar-tag { font-size:10px; font-weight:700; white-space:nowrap; flex-shrink:0; }
   .result-bar-track { flex:1; height:22px; background:#F0F2F5; border-radius:11px; overflow:hidden; }
   .result-bar-fill { height:100%; border-radius:11px; transition:width 0.4s; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:10px; font-weight:700; color:var(--white); min-width:28px; }
   .result-bar-score { font-size:12px; font-weight:700; width:44px; text-align:center; flex-shrink:0; }
@@ -160,6 +162,7 @@
     .supplier-section input[type="text"] { width:100%; }
     .grade-ref { grid-template-columns:repeat(3,1fr); }
     .result-bar-label { width:80px; font-size:10px; }
+    .result-bar-tag { font-size:9px; }
   }
 </style>
 </head>
@@ -449,15 +452,19 @@ function recalc() {
 
   const barColors={'卓越':'linear-gradient(90deg,#43A047,#66BB6A)','优秀':'linear-gradient(90deg,#1E88E5,#42A5F5)','良好':'linear-gradient(90deg,#F9A825,#FDD835)','合格':'linear-gradient(90deg,#E65100,#FF8F00)','不合格':'linear-gradient(90deg,#C62828,#EF5350)'};
   const stc={'卓越':'var(--green)','优秀':'var(--med-blue)','良好':'var(--gold)','合格':'#E65100','不合格':'var(--red)'};
-  document.getElementById('result-bars').innerHTML = details.map(b=>`
-    <div class="result-bar-row">
+  document.getElementById('result-bars').innerHTML = details.map(b=>{
+    const narrow = b.pct < 15;
+    const fillText = narrow ? '' : b.gradeName;
+    const tag = narrow ? `<span class="result-bar-tag" style="color:${stc[b.gradeName]||'#999'}">${b.gradeName}</span>` : '';
+    return `<div class="result-bar-row">
       <div class="result-bar-label">${b.name}</div>
-      <div class="result-bar-track"><div class="result-bar-fill" style="width:${b.pct}%;background:${barColors[b.gradeName]||barColors['不合格']}">${b.gradeName}</div></div>
+      <div class="result-bar-track-wrap">${tag}<div class="result-bar-track"><div class="result-bar-fill" style="width:${b.pct}%;background:${barColors[b.gradeName]||barColors['不合格']}">${fillText}</div></div></div>
       <div class="result-bar-score" style="color:${stc[b.gradeName]||'#999'}">${b.score}/${b.max}</div>
-    </div>`).join('')+(deduct>0?`
+    </div>`;
+  }).join('')+(deduct>0?`
     <div class="result-bar-row">
       <div class="result-bar-label" style="color:var(--red);">减分项</div>
-      <div class="result-bar-track"><div class="result-bar-fill" style="width:${deduct*10}%;background:linear-gradient(90deg,#C62828,#EF5350)">-${deduct}</div></div>
+      <div class="result-bar-track-wrap"><div class="result-bar-track"><div class="result-bar-fill" style="width:${deduct*10}%;background:linear-gradient(90deg,#C62828,#EF5350)">-${deduct}</div></div></div>
       <div class="result-bar-score" style="color:var(--red);">-${deduct}</div>
     </div>` : '');
 
