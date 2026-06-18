@@ -53,7 +53,17 @@
   .dim-card.open .dim-header { border-bottom:1px solid var(--border); }
 
   .scoring-guide { font-size:11px; color:#5f6368; background:#F8F9FA; border-left:3px solid #1A365D; padding:8px 12px; border-radius:0 6px 6px 0; margin-bottom:12px; line-height:1.6; }
-  .scoring-guide-icon { margin-right:4px; }
+  .scoring-aux { margin-bottom:8px; }
+  .scoring-aux strong { color:var(--navy); }
+  .aux-item { display:inline-block; margin-right:8px; }
+  .scoring-grade-row { display:flex; gap:8px; padding:3px 0; align-items:baseline; }
+  .sg-label { font-weight:700; white-space:nowrap; flex-shrink:0; font-size:10px; padding:1px 6px; border-radius:3px; color:#fff; }
+  .sg-label.g-excellent { background:#43A047; }
+  .sg-label.g-good { background:#1E88E5; }
+  .sg-label.g-ok { background:#F9A825; color:#333; }
+  .sg-label.g-pass { background:#E65100; }
+  .sg-label.g-fail { background:#C62828; }
+  .sg-desc { font-size:11px; color:#444; }
   .anchor-box { background:#FFF8E1; border:1px solid #FFE082; border-radius:8px; padding:12px 14px; margin-bottom:14px; }
   .anchor-box.fail { background:#FFEBEE; border-color:#EF9A9A; }
   .anchor-title { font-size:12px; font-weight:700; color:var(--navy); margin-bottom:4px; }
@@ -261,25 +271,60 @@ const ADMIN_PASSWORD = 'ls2024';
 
 // ═══════════════ 数据定义 ═══════════════
 const DIMS = [
-  { id:'d1', num:'一', name:'设计与创意能力', weight:20, anchor:'主题理解与设计创意能力',
-    anchorDesc:'准确理解企业文化内涵，回应brief方向，且设计方案具备原创性与基本设计水准；主题理解严重偏离、设计方案敷衍/纯模板套用/缺乏基本设计品质，均视为锚点不达标',
-    scoringGuide:'评价供应商对项目主题的理解深度、设计方案的创新性与完成度。关注：是否准确理解brief需求、设计方案是否有创意而非纯模板套用、视觉呈现是否有基本设计品质、是否能提供多方案选择。',
+  { id:'d1', num:'一', name:'设计与创意能力', subtitle:'主题与创意', weight:20, anchor:'主题理解与设计创意能力',
+    anchorDesc:'准确理解连尚企业文化内涵（使命愿景/价值观/年度精神），准确回应brief方向，且设计方案具备原创性与基本设计水准；主题理解严重偏离、设计方案敷衍/纯模板套用/缺乏基本设计品质，均视为锚点不达标',
+    auxItems:['视觉呈现品质——效果图品质、包装设计精细度','概念与节日融合度——创意与节日属性自然关联','创意记忆点——方案是否有让人印象深刻的亮点'],
+    gradeGuide:{
+      '卓越':'主题理解精准有深度，设计创意有惊喜感；视觉呈现超出预期；概念与节日自然融合，员工有分享欲',
+      '优秀':'主题理解到位，设计创意有亮点；视觉呈现有品质感；概念与节日关联自然',
+      '良好':'主题理解基本准确，设计创意中规中矩；视觉效果达标；有个别小瑕疵',
+      '合格':'主题理解勉强对应，设计偏模板化；视觉效果一般；有明显瑕疵',
+      '不合格':'主题理解严重偏离brief，或设计方案敷衍/纯模板套用/缺乏基本设计水准；未体现企业文化核心要素'
+    },
     ranges:[{name:'卓越',min:16,max:20,cls:'g-excellent'},{name:'优秀',min:13,max:15,cls:'g-good'},{name:'良好',min:10,max:12,cls:'g-ok'},{name:'合格',min:7,max:9,cls:'g-pass'},{name:'不合格',min:0,max:6,cls:'g-fail'}]},
-  { id:'d2', num:'二', name:'选品能力', weight:25, anchor:'选品与主题契合度',
+  { id:'d2', num:'二', name:'选品能力', subtitle:'选品与甄选', weight:25, anchor:'选品与主题契合度',
     anchorDesc:'选品与主题理解、设计理念高度契合，能准确回应项目需求',
-    scoringGuide:'评价供应商的选品是否贴合项目主题、品质是否达标、品类是否丰富。关注：选品是否与福利主题契合、产品品质与性价比、能否提供多样化选择、是否有独家或特色品项、样品质量是否稳定。',
+    auxItems:['品类创新力——是否引入新品类/新品牌，避开已用品类','预算控制力——选品组合与预算匹配度','选品研究深度——是否做过前期调研、用户画像分析'],
+    gradeGuide:{
+      '卓越':'选品与主题强关联，有"惊喜感"；创新品类引入，员工有分享欲；预算控制精准',
+      '优秀':'选品与主题关联度高；品类有一定新意；预算控制良好',
+      '良好':'选品基本达标，偏常规；预算基本控制；有个别小瑕疵',
+      '合格':'选品与主题关联不紧密；品类缺乏新意；预算有小幅偏差',
+      '不合格':'选品与主题严重脱节；品类重复无新意；严重超预算'
+    },
     ranges:[{name:'卓越',min:20,max:25,cls:'g-excellent'},{name:'优秀',min:16,max:19,cls:'g-good'},{name:'良好',min:12,max:15,cls:'g-ok'},{name:'合格',min:8,max:11,cls:'g-pass'},{name:'不合格',min:0,max:7,cls:'g-fail'}]},
-  { id:'d3', num:'三', name:'品质把控能力', weight:25, anchor:'主品品质稳定性',
+  { id:'d3', num:'三', name:'品质把控能力', subtitle:'品质与品控', weight:25, anchor:'主品品质稳定性',
     anchorDesc:'大货品质稳定可靠，实物与样品/效果图一致，无明显质量缺陷',
-    scoringGuide:'评价供应商对大货品质的把控能力。关注：大货与样品/效果图是否一致、有无明显色差/做工问题、包装是否完整美观、质检流程是否完善、不合格品处理是否及时、历次合作品质是否稳定。',
+    auxItems:['大货品控——瑕疵率、退换货率','品控意识——是否有主动质检流程，过往品质问题频率','异常处理——出现品质问题后的补救态度与效率'],
+    gradeGuide:{
+      '卓越':'大货品质超出预期，零质量投诉；品控流程完善；出现问题主动补救',
+      '优秀':'大货品质稳定，极少瑕疵；品控意识强；问题补救及时',
+      '良好':'品质基本达标；偶有小瑕疵但不影响使用；问题可修复',
+      '合格':'品质有明显瑕疵但可接受；品控意识一般；需多次沟通才处理问题',
+      '不合格':'大货品质严重缩水，与样品差异大；多次出现品质问题；品控意识差'
+    },
     ranges:[{name:'卓越',min:20,max:25,cls:'g-excellent'},{name:'优秀',min:16,max:19,cls:'g-good'},{name:'良好',min:12,max:15,cls:'g-ok'},{name:'合格',min:8,max:11,cls:'g-pass'},{name:'不合格',min:0,max:7,cls:'g-fail'}]},
-  { id:'d4', num:'四', name:'交付与履约能力', weight:20, anchor:'按时按量按规格交付',
-    anchorDesc:'在约定时间内完成约定数量的交付，货品规格、配送对象和地点无误',
-    scoringGuide:'评价供应商的交付可靠性。关注：是否按时交付、交付数量是否准确、货品规格是否与合同一致、配送对象和地点是否正确、出现延误时是否提前预警、多次合作交付是否稳定。',
+  { id:'d4', num:'四', name:'交付与履约能力', subtitle:'交付与执行', weight:20, anchor:'按时按量按规格交付',
+    anchorDesc:'在约定时间内完成约定数量的交付，货品规格、配送对象和地点无误，无重大延误、错发或缺货',
+    auxItems:['配送准确性——发对货、发对人、发对地点','应急响应——面对临时变更（如加急、调量）的调整能力'],
+    gradeGuide:{
+      '卓越':'交付零失误，货品规格与地点完全正确；面对突发状况主动调整、超预期完成',
+      '优秀':'交付准时完整，规格无误；偶有小问题但能快速解决',
+      '良好':'交付基本准时；有小延迟或小瑕疵但不影响整体发放',
+      '合格':'交付有延迟或数量有偏差，但最终完成',
+      '不合格':'严重延误、大量发错货/漏发/规格不符；无法正常使用'
+    },
     ranges:[{name:'卓越',min:16,max:20,cls:'g-excellent'},{name:'优秀',min:13,max:15,cls:'g-good'},{name:'良好',min:10,max:12,cls:'g-ok'},{name:'合格',min:7,max:9,cls:'g-pass'},{name:'不合格',min:0,max:6,cls:'g-fail'}]},
-  { id:'d5', num:'五', name:'服务与响应能力', weight:10, anchor:'沟通配合度',
+  { id:'d5', num:'五', name:'服务与响应能力', subtitle:'沟通与配合', weight:10, anchor:'沟通配合度',
     anchorDesc:'对接顺畅，响应及时，能积极配合需求调整',
-    scoringGuide:'评价供应商的服务态度与沟通效率。关注：响应速度是否及时、沟通是否专业清晰、对需求变更是否积极配合、问题处理是否主动负责、售后支持是否到位。',
+    auxItems:['问题解决速度——出现异常时的处理效率','主动性——是否主动同步进度、预警风险','专业度——能否提供专业建议，而非被动执行'],
+    gradeGuide:{
+      '卓越':'沟通高效，主动跟进；问题出现前就预判并处理；提供超出预期的专业建议',
+      '优秀':'沟通顺畅，响应及时；问题出现后能快速解决；有一定主动性',
+      '良好':'沟通基本顺畅，响应基本及时；问题解决偶有延迟',
+      '合格':'沟通偶有不畅，响应偏慢；问题解决需要多次催促',
+      '不合格':'沟通困难，响应迟缓；问题推诿，缺乏解决意愿'
+    },
     ranges:[{name:'卓越',min:8,max:10,cls:'g-excellent'},{name:'优秀',min:6,max:7,cls:'g-good'},{name:'良好',min:5,max:5,cls:'g-ok'},{name:'合格',min:3,max:4,cls:'g-pass'},{name:'不合格',min:0,max:2,cls:'g-fail'}]},
 ];
 
@@ -328,7 +373,7 @@ function buildDimCards() {
       <div class="dim-header" onclick="toggleCard('${dim.id}')">
         <div class="dim-title">
           <div class="dim-num">${dim.num}</div>
-          <div><div class="dim-name">${dim.name}</div><div class="dim-weight">满分 ${dim.weight} 分</div></div>
+          <div><div class="dim-name">${dim.name}</div><div class="dim-weight">满分 ${dim.weight} 分 · ${dim.subtitle}</div></div>
         </div>
         <div class="dim-result">
           <div class="dim-grade" id="grade-${dim.id}"></div>
@@ -336,7 +381,10 @@ function buildDimCards() {
         </div>
       </div>
       <div class="dim-body">
-        <div class="scoring-guide"><span class="scoring-guide-icon">💡</span>${dim.scoringGuide}</div>
+        <div class="scoring-guide">
+          <div class="scoring-aux"><strong>辅助项：</strong>${dim.auxItems.map(a => `<span class="aux-item">① ${a}</span>`).join('')}</div>
+          <div class="scoring-grades">${dim.ranges.map(r => `<div class="scoring-grade-row"><span class="sg-label ${r.cls}">${r.name}（${r.min}-${r.max}分）</span><span class="sg-desc">${dim.gradeGuide[r.name]}</span></div>`).join('')}</div>
+        </div>
         <div class="anchor-box" id="anchor-box-${dim.id}">
           <div class="anchor-title">🔒 关键锚点：${dim.anchor}</div>
           <div class="anchor-desc">${dim.anchorDesc}</div>
