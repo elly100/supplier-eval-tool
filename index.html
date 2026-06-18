@@ -1265,7 +1265,31 @@ function formatFileSize(bytes) {
 }
 
 function getSafeFolderName(name) {
-  return name.replace(/[^a-zA-Z0-9\u4e00-\u9fff._-]/g, '_');
+  // Supabase Storage 不支持中文路径，用 Base64 编码
+  return btoa(unescape(encodeURIComponent(name))).replace(/[/+=]/g, '_');
+}
+
+function getSafeFileName(name) {
+  // 保留扩展名，文件名部分用 Base64
+  const dotIdx = name.lastIndexOf('.');
+  const ext = dotIdx >= 0 ? name.slice(dotIdx) : '';
+  const base = dotIdx >= 0 ? name.slice(0, dotIdx) : name;
+  return btoa(unescape(encodeURIComponent(base))).replace(/[/+=]/g, '_') + ext;
+}
+
+function decodeFileName(safeName) {
+  // 从安全文件名还原原始文件名
+  const dotIdx = safeName.lastIndexOf('.');
+  const ext = dotIdx >= 0 ? safeName.slice(dotIdx) : '';
+  const base = dotIdx >= 0 ? safeName.slice(0, dotIdx) : safeName;
+  try {
+    const b64 = base.replace(/_/g, '/');
+    // 补齐 Base64 padding
+    const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+    return decodeURIComponent(escape(atob(padded))) + ext;
+  } catch(e) {
+    return safeName; // 解码失败就返回原名
+  }
 }
 
 async function loadAttachments(supplierName) {
@@ -1285,10 +1309,11 @@ async function loadAttachments(supplierName) {
     if (f.name === '.emptyFolderPlaceholder') return;
     const filePath = folder + f.name;
     const url = sb.storage.from(STORAGE_BUCKET).getPublicUrl(filePath).data.publicUrl;
+    const displayName = decodeFileName(f.name);
     html += `<div class="attachment-item">
-      <span class="ai-icon">${getFileIcon(f.name)}</span>
+      <span class="ai-icon">${getFileIcon(displayName)}</span>
       <div class="ai-info">
-        <div class="ai-name">${escHtml(f.name)}</div>
+        <div class="ai-name">${escHtml(displayName)}</div>
         <div class="ai-meta">${formatFileSize(f.metadata?.size||0)} · ${new Date(f.created_at).toLocaleDateString('zh-CN')}</div>
       </div>
       <div class="ai-actions">
@@ -1323,7 +1348,7 @@ async function uploadFiles(supplierName, files) {
       continue;
     }
     progressArea.innerHTML += `<div class="upload-progress" id="upload-${i}">⏳ 上传中: ${file.name}</div>`;
-    const filePath = folder + file.name;
+    const filePath = folder + getSafeFileName(file.name);
     const { error } = await sb.storage.from(STORAGE_BUCKET).upload(filePath, file, { upsert: true });
     const el = document.getElementById('upload-' + i);
     if (error) {
