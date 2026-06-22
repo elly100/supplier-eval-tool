@@ -574,9 +574,6 @@
   .sr-score-track { flex:1; height:8px; background:#E2E8F0; border-radius:4px; overflow:hidden; max-width:180px; }
   .sr-score-fill { height:100%; border-radius:4px; transition:width .4s; }
   .sr-score-num { font-size:13px; font-weight:700; color:#1E3A5F; min-width:40px; }
-  .ai-key-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-  .ai-key-row input { flex:1; min-width:180px; padding:7px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:12px; }
-  .ai-key-hint { font-size:11px; color:#888; }
 
 
 
@@ -1529,11 +1526,6 @@ function renderArchiveDetail(name) {
   // AI 复盘总结区域
   html += `<div class="summary-section">
     <div class="summary-title">🤖 AI 复盘总结</div>
-    <div class="ai-key-row">
-      <input type="password" id="ai-api-key" placeholder="已内置免费API Key，可直接生成" value="">
-      <button class="btn btn-outline btn-sm" onclick="localStorage.setItem('deepseek_api_key',document.getElementById('ai-api-key').value);this.textContent='已保存✓';setTimeout(()=>this.textContent='保存Key',1200)">保存Key</button>
-      <span class="ai-key-hint">Key 仅保存在你的浏览器，不会上传</span>
-    </div>
     <button class="btn btn-primary btn-sm" id="gen-summary-btn" onclick="generateSummary('${escHtml(name)}')">✨ 生成复盘总结</button>
     <div class="summary-loading" id="summary-loading">⏳ AI 正在分析评价数据，请稍候...</div>
     <div class="summary-error" id="summary-error"></div>
@@ -1686,7 +1678,7 @@ async function generateSummary(supplierName) {
   const loading = document.getElementById('summary-loading');
   const result = document.getElementById('summary-result');
   const errorEl = document.getElementById('summary-error');
-  const apiKey = document.getElementById('ai-api-key').value.trim() || localStorage.getItem('deepseek_api_key') || 'REDACTED_ZHIPU_KEY';
+  const apiKey = 'REDACTED_ZHIPU_KEY';
 
   if (!apiKey) {
     errorEl.textContent = '请先输入 DeepSeek API Key';
