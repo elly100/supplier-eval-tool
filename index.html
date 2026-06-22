@@ -1524,12 +1524,13 @@ function renderArchiveDetail(name) {
   </div>`;
 
   // AI 复盘总结区域
+  const savedSummary = localStorage.getItem(`summary_${currentCategory}_${name}`);
   html += `<div class="summary-section">
     <div class="summary-title">🤖 AI 复盘总结</div>
-    <button class="btn btn-primary btn-sm" id="gen-summary-btn" onclick="generateSummary('${escHtml(name)}')">✨ 生成复盘总结</button>
+    <button class="btn btn-primary btn-sm" id="gen-summary-btn" onclick="generateSummary('${escHtml(name)}')">✨ ${savedSummary?'重新生成':'生成复盘总结'}</button>
     <div class="summary-loading" id="summary-loading">⏳ AI 正在分析评价数据，请稍候...</div>
     <div class="summary-error" id="summary-error"></div>
-    <div class="summary-result" id="summary-result"></div>
+    <div class="summary-result${savedSummary?' show':''}" id="summary-result">${savedSummary||''}</div>
   </div>`;
 
   container.innerHTML = html;
@@ -1779,6 +1780,7 @@ ${evalText}`;
       html = html.replace(/^```html?\s*/i, '').replace(/\s*```$/,'');
       result.innerHTML = html;
       result.classList.add('show');
+      localStorage.setItem(`summary_${currentCategory}_${supplierName}`, html);
     } else {
       errorEl.textContent = data.error?.message || '生成失败，请检查API Key';
       errorEl.classList.add('show');
