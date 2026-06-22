@@ -1530,7 +1530,7 @@ function renderArchiveDetail(name) {
   html += `<div class="summary-section">
     <div class="summary-title">🤖 AI 复盘总结</div>
     <div class="ai-key-row">
-      <input type="password" id="ai-api-key" placeholder="已内置API Key，可直接生成" value="">
+      <input type="password" id="ai-api-key" placeholder="已内置免费API Key，可直接生成" value="">
       <button class="btn btn-outline btn-sm" onclick="localStorage.setItem('deepseek_api_key',document.getElementById('ai-api-key').value);this.textContent='已保存✓';setTimeout(()=>this.textContent='保存Key',1200)">保存Key</button>
       <span class="ai-key-hint">Key 仅保存在你的浏览器，不会上传</span>
     </div>
@@ -1686,7 +1686,7 @@ async function generateSummary(supplierName) {
   const loading = document.getElementById('summary-loading');
   const result = document.getElementById('summary-result');
   const errorEl = document.getElementById('summary-error');
-  const apiKey = document.getElementById('ai-api-key').value.trim() || localStorage.getItem('deepseek_api_key') || 'REDACTED_DEEPSEEK_KEY';
+  const apiKey = document.getElementById('ai-api-key').value.trim() || localStorage.getItem('deepseek_api_key') || 'REDACTED_ZHIPU_KEY';
 
   if (!apiKey) {
     errorEl.textContent = '请先输入 DeepSeek API Key';
@@ -1764,14 +1764,14 @@ ${evalText}`;
   errorEl.classList.remove('show');
 
   try {
-    const resp = await fetch('https://api.deepseek.com/chat/completions', {
+    const resp = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'glm-4.5-flash',
         messages: [
           { role: 'system', content: '你是一个专业的供应商复盘总结分析师。严格基于提供的数据进行总结，禁止编造。输出HTML片段，不使用markdown。' },
           { role: 'user', content: prompt }
