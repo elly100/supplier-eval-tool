@@ -551,6 +551,32 @@
 
   .empty-state { border-radius: 20px; background: rgba(255,255,255,0.62); }
 
+  /* AI 复盘总结 */
+  .summary-title { font-size:15px; font-weight:700; color:var(--primary-dark); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+  .summary-result { background:#F8FAFE; border:1px solid #D9E2F3; border-radius:10px; padding:22px 26px; display:none; }
+  .summary-result.show { display:block; }
+  .summary-loading { text-align:center; padding:20px; color:var(--primary); font-size:13px; display:none; }
+  .summary-loading.show { display:block; }
+  .summary-error { background:#FFEBEE; border:1px solid #EF9A9A; border-radius:8px; padding:12px 16px; color:var(--red); font-size:12px; display:none; }
+  .summary-error.show { display:block; }
+  .sr-block { margin-bottom:18px; }
+  .sr-block:last-child { margin-bottom:0; }
+  .sr-block-title { font-size:15px; font-weight:700; color:#1E3A5F; margin-bottom:8px; padding-bottom:5px; border-bottom:2px solid #2563EB; display:inline-block; }
+  .sr-row { display:flex; gap:16px; margin-bottom:6px; font-size:14px; line-height:1.8; }
+  .sr-label { font-weight:700; color:#1E3A5F; min-width:90px; flex-shrink:0; }
+  .sr-val { color:#333; flex:1; }
+  .sr-highlight { background:linear-gradient(transparent 60%,#FDE68A 60%); padding:0 2px; font-weight:700; }
+  .sr-tag { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700; margin-right:6px; }
+  .sr-tag-good { background:#D1FAE5; color:#059669; }
+  .sr-tag-warn { background:#FEF3C7; color:#92400E; }
+  .sr-tag-bad { background:#FEE2E2; color:#DC2626; }
+  .sr-score-bar { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+  .sr-score-track { flex:1; height:8px; background:#E2E8F0; border-radius:4px; overflow:hidden; max-width:180px; }
+  .sr-score-fill { height:100%; border-radius:4px; transition:width .4s; }
+  .sr-score-num { font-size:13px; font-weight:700; color:#1E3A5F; min-width:40px; }
+  .ai-key-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .ai-key-row input { flex:1; min-width:180px; padding:7px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:12px; }
+  .ai-key-hint { font-size:11px; color:#888; }
 
 
 
@@ -1500,6 +1526,20 @@ function renderArchiveDetail(name) {
     </div>
   </div>`;
 
+  // AI 复盘总结区域
+  html += `<div class="summary-section">
+    <div class="summary-title">🤖 AI 复盘总结</div>
+    <div class="ai-key-row">
+      <input type="password" id="ai-api-key" placeholder="输入 DeepSeek API Key（仅存本地浏览器）" value="${localStorage.getItem('deepseek_api_key')||''}">
+      <button class="btn btn-outline btn-sm" onclick="localStorage.setItem('deepseek_api_key',document.getElementById('ai-api-key').value);this.textContent='已保存✓';setTimeout(()=>this.textContent='保存Key',1200)">保存Key</button>
+      <span class="ai-key-hint">Key 仅保存在你的浏览器，不会上传</span>
+    </div>
+    <button class="btn btn-primary btn-sm" id="gen-summary-btn" onclick="generateSummary('${escHtml(name)}')">✨ 生成复盘总结</button>
+    <div class="summary-loading" id="summary-loading">⏳ AI 正在分析评价数据，请稍候...</div>
+    <div class="summary-error" id="summary-error"></div>
+    <div class="summary-result" id="summary-result"></div>
+  </div>`;
+
   container.innerHTML = html;
   loadAttachments(name);
 }
@@ -1638,6 +1678,127 @@ async function deleteAttachment(supplierName, fileName) {
   const { error } = await sb.storage.from(STORAGE_BUCKET).remove([filePath]);
   if (error) { alert('删除失败：' + error.message); return; }
   loadAttachments(supplierName);
+}
+
+// ═══════════════ AI 复盘总结（前端直调 DeepSeek） ═══════════════
+async function generateSummary(supplierName) {
+  const btn = document.getElementById('gen-summary-btn');
+  const loading = document.getElementById('summary-loading');
+  const result = document.getElementById('summary-result');
+  const errorEl = document.getElementById('summary-error');
+  const apiKey = document.getElementById('ai-api-key').value.trim() || localStorage.getItem('deepseek_api_key') || '';
+
+  if (!apiKey) {
+    errorEl.textContent = '请先输入 DeepSeek API Key';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  // 组装评价数据
+  const evals = allEvaluations.filter(e => e.supplier_name === supplierName && (e.category||'福利礼品定制')===currentCategory);
+  if (!evals.length) {
+    errorEl.textContent = '该供应商暂无评价数据';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  let evalText = `供应商：${supplierName}\n评价人数：${evals.length}\n\n`;
+  evals.forEach((e, i) => {
+    evalText += `--- 评价人 ${i+1}：${e.reviewer_name} ---\n`;
+    evalText += `设计${e.d1_score}/20 选品${e.d2_score}/25 品控${e.d3_score}/25 交付${e.d4_score}/20 服务${e.d5_score}/10\n`;
+    if (e.deduct && e.deduct > 0) evalText += `减分：-${e.deduct}\n`;
+    evalText += `总分：${e.total} 等级：${e.grade}\n`;
+    if (e.pros) evalText += `优点：${e.pros}\n`;
+    if (e.cons) evalText += `不足：${e.cons}\n`;
+    evalText += '\n';
+  });
+  const avgTotal = Math.round(evals.reduce((s,e)=>s+e.total,0)/evals.length);
+  evalText += `平均总分：${avgTotal}\n`;
+
+  const prompt = `你是一个专业的供应商复盘总结分析师。请根据以下评价数据，生成一份复盘总结报告。
+
+【严格规则】
+- 必须基于下方提供的评价数据进行总结，禁止编造任何未提及的数据、事件或细节
+- 所有评分、等级、优缺点必须与原始数据一致，不得夸大或缩小
+- 如果数据不足以得出某项结论，请明确说明"数据不足"而非推测
+
+【输出格式要求】
+请直接输出HTML代码片段（不要用markdown），使用以下结构和CSS类名：
+
+<div class="sr-block">
+  <div class="sr-block-title">一、总体评价概览</div>
+  <div class="sr-row"><span class="sr-label">综合评分</span><span class="sr-val">XX分（等级）<span class="sr-tag sr-tag-good/warn/bad">标签</span></span></div>
+  <div class="sr-row"><span class="sr-label">评价人数</span><span class="sr-val">X人</span></div>
+</div>
+
+<div class="sr-block">
+  <div class="sr-block-title">二、各维度表现</div>
+  每个维度用：
+  <div class="sr-score-bar"><span class="sr-label">维度名</span><div class="sr-score-track"><div class="sr-score-fill" style="width:XX%;background:#颜色"></div></div><span class="sr-score-num">XX/满分</span></div>
+  颜色：>=80%用#10B981, 60-79%用#F59E0B, <60%用#EF4444
+  并用 sr-row 说明该维度的具体表现
+</div>
+
+<div class="sr-block">
+  <div class="sr-block-title">三、核心优势</div>
+  用 sr-row + sr-highlight 标亮关键点
+</div>
+
+<div class="sr-block">
+  <div class="sr-block-title">四、主要问题</div>
+  用 sr-row + sr-tag sr-tag-warn/sr-tag-bad 标注
+</div>
+
+<div class="sr-block">
+  <div class="sr-block-title">五、改进建议</div>
+  用 sr-row 列出
+</div>
+
+【评价数据】
+${evalText}`;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ 生成中...';
+  loading.classList.add('show');
+  result.classList.remove('show');
+  errorEl.classList.remove('show');
+
+  try {
+    const resp = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: '你是一个专业的供应商复盘总结分析师。严格基于提供的数据进行总结，禁止编造。输出HTML片段，不使用markdown。' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 2000,
+        temperature: 0.7
+      })
+    });
+    const data = await resp.json();
+    if (data.choices && data.choices[0]) {
+      let html = data.choices[0].message.content;
+      // 去掉可能的 ```html 包裹
+      html = html.replace(/^```html?\s*/i, '').replace(/\s*```$/,'');
+      result.innerHTML = html;
+      result.classList.add('show');
+    } else {
+      errorEl.textContent = data.error?.message || '生成失败，请检查API Key';
+      errorEl.classList.add('show');
+    }
+  } catch (err) {
+    errorEl.textContent = '请求失败：' + err.message;
+    errorEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ 生成复盘总结';
+    loading.classList.remove('show');
+  }
 }
 
 // ═══════════════ 导出 ═══════════════
